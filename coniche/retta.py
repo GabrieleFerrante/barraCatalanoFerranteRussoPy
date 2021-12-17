@@ -115,11 +115,11 @@ class Retta:
         """
         return round(self.__a / self.__b * x + self.__c / self.__b, 2)
 
-    def punti(self, n, m):
+    def punti(self, n, m, step=1):
         """
         :returns: la stringa dell'equazione esplicita
         """
-        return [(i, self.trovaY(i)) for i in range(min(n, m), max(n, m) + 1)]
+        return [(i, self.trovaY(i)) for i in range(min(n, m), max(n, m) + 1, step)]
 
     def intersezione(self, retta1):
         if type(retta1) != Retta:

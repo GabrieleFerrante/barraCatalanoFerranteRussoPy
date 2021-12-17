@@ -34,7 +34,7 @@ class Parabola:
 
     @property
     def asse(self):
-        return -self.__b / (2 * self.__a)
+        return Retta(0, 1, -self.__b / (2 * self.__a))
 
     @property
     def fuoco(self):
@@ -50,13 +50,13 @@ class Parabola:
         y = self.__a * x ** 2 + self.__b * x + self.__c
         return y
 
-    def punti(self, n, m):
+    def punti(self, n, m, step=1):
         output = []
-        for x in range(n, m + 1):
+        for x in range(min(n, m), max(n, m) + 1, step):
             output.append((x, self.trovaY(x)))
         return output
 
-    def intersezione(self, retta):  # W.I.P.
+    def intersezione(self, retta):  # WIP; Le formule dovrebbero essere corrette, ma i risultati non lo sono
         if type(retta) != Retta:
             raise Exception("L'input non è una retta")
         d = pow(self.__b - retta.m, 2) - (4 * self.__a * (self.__c - retta.q))
@@ -79,6 +79,7 @@ class Parabola:
 def main():
     parabola = Parabola("PARAMETRI", 2, 0, 1)
     retta = Retta("PARAMETRI", -1, 1, -2)
+    print(retta.m, retta.q)
     print(parabola.intersezione(retta))
 
 
