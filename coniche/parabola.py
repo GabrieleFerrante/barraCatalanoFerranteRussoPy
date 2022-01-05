@@ -76,12 +76,17 @@ class Parabola:
             return None
 
 
-def main():
+
+if __name__ == '__main__':
+
     parabola = Parabola("PARAMETRI", 2, 0, 1)
     retta = Retta("PARAMETRI", -1, 1, -2)
+    
+    parabola2 = Parabola("PARAMETRI",1,0,0)
+    retta2 = Retta("PARAMETRI", 0,1,-10)
+    
     print(retta.m, retta.q)
     print(parabola.intersezione(retta))
 
-
-if __name__ == '__main__':
-    main()
+    print(retta2.m, retta2.q)
+    print(parabola2.intersezione(retta2))
