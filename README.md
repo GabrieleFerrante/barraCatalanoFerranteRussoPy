@@ -2,11 +2,12 @@
 Il gruppo è formato da [Jorge Russo](https://github.com/Jo-333), [Gabriele Ferrante](http://github.com/GabrieleFerrante/ferrantePy), [Mario Barra](https://github.com/MarioBarra114/Barra.Py) e [Giovanni Catalano](https://github.com/giovannicatalano).
 
 </br>
+
 ## Ruoli:
-Russo: 
+Russo:
 * Gestione e realizzazione del software
 * Scrittura del file README
-* Realizzazzione diagrama di flusso
+* Realizzazione diagrama di flusso
 
 Barra: 
 * Gestione e realizzazione del software
