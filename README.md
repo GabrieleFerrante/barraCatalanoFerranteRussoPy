@@ -22,8 +22,8 @@ Catalano:
 * Gestione e realizzazione del software
 * Realizzazzione diagrama di flusso
 
-Tutti noi stiamo lavorando sulla scrittura del codice e sulla realizzazione del diagramma di flusso, alternandoci ogni settimana. Infatti a gruppi di due, a settimane alterne, ci occupiamo del codice e del diagrama; per non ripetere errori gia risolti e per aggiornarci, ogni volta prima di lavorare, ci incontriamo su di un meet.
+L'intero gruppo sta lavorando alla scrittura del codice e alla realizzazione del diagramma di flusso, con un'alternanza di cadenza settimanale. Infatti, a settimane alterne, due membri si occupano del codice e gli altri due del diagramma; per non ripetere errori già risolti e per aggiornarci, ogni volta prima di lavorare, il gruppo si riunisce su un meet.
 
 ### Il gioco in Pygame
 
-L'idea del gruppo consiste in un gioco di tiro al bersaglio. Abbiamo iniziato a prototipare il gioco partendo da un'idea di base.
+L'idea consiste in un gioco di tiro al bersaglio. Il gruppo iniziato a prototipare il gioco partendo da un'idea di base.
