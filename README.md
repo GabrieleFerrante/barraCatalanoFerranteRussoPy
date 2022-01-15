@@ -26,4 +26,4 @@ L'intero gruppo sta lavorando alla scrittura del codice e alla realizzazione del
 
 ### Il gioco in Pygame
 
-L'idea consiste in un gioco di tiro al bersaglio. Il gruppo iniziato a prototipare il gioco partendo da un'idea di base.
+L'idea consiste in un gioco di tiro al bersaglio. Il gruppo ha iniziato a prototipare il gioco partendo da un'idea di base.
