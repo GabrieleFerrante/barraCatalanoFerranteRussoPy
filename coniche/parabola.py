@@ -94,6 +94,7 @@ class Parabola:
             return None
 
 
+<<<<<<< HEAD
 if __name__ == '__main__':
 
     parabola = Parabola(0, 2, 0, 1)
@@ -102,6 +103,17 @@ if __name__ == '__main__':
     parabola2 = Parabola(0, 1, 0, 0)
     retta2 = Retta(0, 0, 1, -10)
 
+=======
+
+if __name__ == '__main__':
+
+    parabola = Parabola("PARAMETRI", 2, 0, 1)
+    retta = Retta("PARAMETRI", -1, 1, -2)
+    
+    parabola2 = Parabola("PARAMETRI",1,0,0)
+    retta2 = Retta("PARAMETRI", 0,1,-10)
+    
+>>>>>>> 7b005be76cdcf86c6db94c04000f8bbb139f95c7
     print(retta.m, retta.q)
     print(parabola.intersezione(retta))
 
