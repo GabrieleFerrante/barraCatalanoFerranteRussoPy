@@ -1,20 +1,20 @@
 class Retta:
-    def __init__(self, tipo="PARAMETRI", *args):
+    def __init__(self, tipo=0, *args):
         """
-        Il tipo è PARAMETRI per a, b, c; COEFFICIENTE per m e un punto; PUNTI per due punti
+        Il tipo è 0 per a, b, c; 1 per m e un punto; 2 per due punti
         """
-        if tipo == "PARAMETRI":
+        if tipo == 0:
             self.__a = args[0]
             self.__b = args[1]
             self.__c = args[2]
-        elif tipo == "COEFFICIENTE":
+        elif tipo == 1:
             self.__m = args[0]
             self.__punto = args[1]
 
             self.__a = -self.__m
             self.__b = 1
             self.__c = self.__m * self.__punto[0] - self.__punto[1]
-        elif tipo == "PUNTI":
+        elif tipo == 2:
             self.__punto1 = args[0]
             self.__punto2 = args[1]
             self.__m = (self.__punto2[1] - self.__punto1[1]) / (self.__punto2[0] - self.__punto1[0])

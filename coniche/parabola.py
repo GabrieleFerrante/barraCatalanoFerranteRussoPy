@@ -1,15 +1,33 @@
 from math import sqrt, pow
-
+import numpy as np
 from retta import Retta
 
 
 class Parabola:
-    def __init__(self, tipo="PARAMETRI", *params):
-        if tipo == "PARAMETRI":
+    def __init__(self, tipo=0, *params):
+        '''
+        Il tipo è 0 per costruire la parabola con a, b, c; 1 per costruire la parabola con tre punti per la quale passa
+        '''
+        if tipo == 0:
             self.__a = params[0]
             self.__b = params[1]
             self.__c = params[2]
             self.__delta = self.__b ** 2 - (4 * self.__a * self.__c)
+        elif tipo == 1:
+            matrix_a = np.array([
+                [params[0][0]**2, params[0][0], 1],
+                [params[1][0]**2, params[1][0], 1],
+                [params[2][0]**2, params[2][0], 1]
+            ])
+            matrix_b = np.array([params[0][1], params[1][1], params[2][1]])
+            matrix_c = np.linalg.solve(matrix_a, matrix_b)
+
+            self.__a = matrix_c[0]
+            self.__b = matrix_c[1]
+            self.__c = matrix_c[2]
+            self.__delta = self.__b ** 2 - (4 * self.__a * self.__c)
+
+
         else:
             raise Exception("Il tipo specificato non è un'opzione")
 
@@ -52,14 +70,14 @@ class Parabola:
 
     def punti(self, n, m, step=1):
         output = []
-        for x in range(min(n, m), max(n, m) + 1, step):
+        for x in range(int(min(n, m)), int(max(n, m)) + 1, step):
             output.append((x, self.trovaY(x)))
         return output
 
     def intersezione(self, retta):  # WIP; Le formule dovrebbero essere corrette, ma i risultati non lo sono
         if type(retta) != Retta:
             raise Exception("L'input non è una retta")
-        d = pow(self.__b - retta.m, 2) - (4 * self.__a * (self.__c - retta.q))
+        d = pow(self.__b - retta.m, 2) - ((4 * self.__a) * (self.__c - retta.q))
         # return d
 
         if d == 0:
@@ -76,12 +94,16 @@ class Parabola:
             return None
 
 
-def main():
-    parabola = Parabola("PARAMETRI", 2, 0, 1)
-    retta = Retta("PARAMETRI", -1, 1, -2)
+if __name__ == '__main__':
+
+    parabola = Parabola(0, 2, 0, 1)
+    retta = Retta(0, -1, 1, -2)
+
+    parabola2 = Parabola(0, 1, 0, 0)
+    retta2 = Retta(0, 0, 1, -10)
+
     print(retta.m, retta.q)
     print(parabola.intersezione(retta))
 
-
-if __name__ == '__main__':
-    main()
+    print(retta2.m, retta2.q)
+    print(parabola2.intersezione(retta2))
