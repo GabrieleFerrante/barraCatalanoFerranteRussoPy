@@ -1,10 +1,8 @@
-from fnmatch import translate
 import os
 import sys
 import pygame
 from random import randint
-from pathlib import WindowsPath
-basefolder = str(WindowsPath().parent.absolute()) + '\\pygame-prototype\\'
+basefolder = os.path.dirname(os.path.abspath(__file__)).replace(os.path.basename(__file__), '') + '\\'
 sys.path.insert(
     1, basefolder.replace('pygame-prototype', 'coniche')
 )
@@ -80,15 +78,15 @@ class Target:
 
 
 class Arrow:
-    def __init__(self, trajectory, angle):
+    def __init__(self, trajectory):
         self.image = pygame.image.load(
             basefolder + 'arrow.png'
         )
         self.rect = self.image.get_rect()
         self.trajectory = trajectory
-        self.angle = angle
         self.counter = 0
         self.prev_counter = 0
+        self.angle = 45
 
     def draw(self):
         rotated_arrow, rotated_arrow_rect = rot_from_zero(self.image, self.angle)
@@ -96,9 +94,9 @@ class Arrow:
         screen.blit(rotated_arrow, rotated_arrow_rect)
 
     def update(self):
-
         if self.counter < len(self.trajectory):
             if int(self.counter) > int(self.prev_counter):            
+
                 self.rect.center = self.trajectory[int(self.counter)]
                 self.prev_counter = self.counter
             self.counter += map_range(len(self.trajectory), 0, WIDTH, 0.15, 3.5)
@@ -133,14 +131,14 @@ previous_fire_ticks = pygame.time.get_ticks()
 
 while 1:
 
+    screen.fill((101, 203, 214))
+    player.draw()
+
     # Handling the targets
     current_ticks = pygame.time.get_ticks()
     if current_ticks - previous_target_ticks >= targets_spawn_time:
         targets.append(Target(WIDTH, randint(0, HEIGHT - 110)))
         previous_target_ticks = current_ticks
-
-    screen.fill((101, 203, 214))
-    player.draw()
 
     for i, e in list(enumerate(targets))[::-1]:
         e.update()
@@ -193,7 +191,7 @@ while 1:
         (v_x, mouse_pos.y),
     )
     trajectory = [(i[0], int(i[1])) for i in trajectory_parabola.punti(
-        rotated_bow_rect.centerx, mouse_pos.x)]
+        rotated_bow_rect.centerx, mouse_pos.x + 50)]
 
     # Input detection
     for event in pygame.event.get():
@@ -204,7 +202,7 @@ while 1:
                 debug = not debug
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if current_ticks - previous_fire_ticks >= fire_rate:
-                arrows.append(Arrow(trajectory, angle))
+                arrows.append(Arrow(trajectory))
                 previous_fire_ticks = current_ticks
 
     # Debug view
