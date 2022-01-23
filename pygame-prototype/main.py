@@ -1,6 +1,9 @@
+from email.mime import base
+from itertools import count
 import os
 import sys
 import pygame
+from math import *
 from random import randint
 basefolder = os.path.dirname(os.path.abspath(__file__)).replace(os.path.basename(__file__), '') + '\\'
 sys.path.insert(
@@ -45,11 +48,9 @@ def map_range(value, leftMin, leftMax, rightMin, rightMax):
 class Player:
     def __init__(self, x, y, width=64, height=64):
         self.rect = pygame.Rect(x, y, width, height)
-        self.dirx = 0
-        self.diry = 0
 
     def draw(self):
-        rectangle = pygame.draw.rect(screen, (255, 0, 0), self.rect)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect)
 
 
 # Target class
@@ -83,10 +84,13 @@ class Arrow:
             basefolder + 'arrow.png'
         )
         self.rect = self.image.get_rect()
+        self.rect.x = -self.rect.width
         self.trajectory = trajectory
         self.counter = 0
         self.prev_counter = 0
-        self.angle = 45
+        self.angle = -45
+        self.mouse = mouse_pos
+        self.mouse.y = HEIGHT - self.mouse.y
 
     def draw(self):
         rotated_arrow, rotated_arrow_rect = rot_from_zero(self.image, self.angle)
@@ -94,19 +98,33 @@ class Arrow:
         screen.blit(rotated_arrow, rotated_arrow_rect)
 
     def update(self):
-        if self.counter < len(self.trajectory):
+        if int(self.counter) <= len(self.trajectory):
             if int(self.counter) > int(self.prev_counter):            
 
                 self.rect.center = self.trajectory[int(self.counter)]
                 self.prev_counter = self.counter
-            self.counter += map_range(len(self.trajectory), 0, WIDTH, 0.15, 3.5)
+
+
+                base =  self.trajectory[int(self.counter)+1].x - self.rect.centerx
+                altezza = self.trajectory[int(self.counter)+1].y - self.rect.centery
+                ipotenusa = hypot(base, altezza)
+                self.angle = -degrees(asin(altezza / ipotenusa)) - 90
+
+                print(self.angle)
+
+            counter_increase = map_range(
+                pygame.Vector2(player.rect.center).distance_to(self.mouse), 0, pygame.Vector2(player.rect.center).distance_to(pygame.Vector2(WIDTH, 0)), 0.15, 5
+                )
+            if counter_increase < 0.15: counter_increase = 0.15
+            self.counter += counter_increase
+            # print(counter_increase, self.prev_counter, self.counter)
 
 
 player = Player(64, HEIGHT - 128)
 
 # Targets init
 targets = []
-targets_spawn_time = 3000
+targets_spawn_time = 3500
 previous_target_ticks = pygame.time.get_ticks()
 
 # Ground animation init
@@ -131,11 +149,12 @@ previous_fire_ticks = pygame.time.get_ticks()
 
 while 1:
 
+    current_ticks = pygame.time.get_ticks()
+
     screen.fill((101, 203, 214))
     player.draw()
 
     # Handling the targets
-    current_ticks = pygame.time.get_ticks()
     if current_ticks - previous_target_ticks >= targets_spawn_time:
         targets.append(Target(WIDTH, randint(0, HEIGHT - 110)))
         previous_target_ticks = current_ticks
@@ -163,7 +182,7 @@ while 1:
             del arrows[i]
 
     # Animate the ground
-    if frame_counter % 24 == 0:
+    if frame_counter % 12 == 0:
         ground_frame_counter += 1
 
     if ground_frame_counter >= len(ground_frames):
@@ -190,8 +209,8 @@ while 1:
         (mouse_pos.x, rotated_bow_rect.centery),
         (v_x, mouse_pos.y),
     )
-    trajectory = [(i[0], int(i[1])) for i in trajectory_parabola.punti(
-        rotated_bow_rect.centerx, mouse_pos.x + 50)]
+    trajectory = [pygame.Vector2(i[0], int(i[1])) for i in trajectory_parabola.punti(
+        rotated_bow_rect.centerx, WIDTH)]
 
     # Input detection
     for event in pygame.event.get():
