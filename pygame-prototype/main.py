@@ -1,5 +1,3 @@
-from email.mime import base
-from itertools import count
 import os
 import sys
 import pygame
