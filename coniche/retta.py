@@ -140,18 +140,18 @@ class Retta:
 
 
 def main():
-    tipo = input("Scegli il tipo di retta tra PARAMETRI, COEFFICIENTE, PUNTI: ").upper()
-    if tipo == "PARAMETRI":
+    tipo = int(input("Scegli il tipo di retta tra 0, 1, 2: "))
+    if tipo == 0:
         a, b, c = input("Inserisci a, b e c separati da spazi: ").split()
         a, b, c = float(a), float(b), float(c)
         retta = Retta(tipo, a, b, c)
         print(retta.m)
-    elif tipo == "COEFFICIENTE":
+    elif tipo == 1:
         m = float(input("Inserisci m: "))
         x, y = float(input("Inserisci x: ")), float(input("Inserisci y: "))
         retta = Retta(tipo, m, (x, y))
         print(retta.eqEsplicita())
-    elif tipo == "PUNTI":
+    elif tipo == 2:
         x1, y1 = float(input("Inserisci x1: ")), float(input("Inserisci y1: "))
         x2, y2 = float(input("Inserisci x2: ")), float(input("Inserisci y2: "))
         retta = Retta(tipo, (x1, y1), (x2, y2))
