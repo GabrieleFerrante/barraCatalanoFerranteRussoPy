@@ -74,36 +74,19 @@ class Parabola:
             output.append((x, self.trovaY(x)))
         return output
 
-    def intersezione(self, retta):  # WIP; Le formule dovrebbero essere corrette, ma i risultati non lo sono
+    def intersezione_retta(self, retta):  # WIP; Le formule dovrebbero essere corrette, ma i risultati non lo sono
         if type(retta) != Retta:
             raise Exception("L'input non è una retta")
-        d = pow(self.__b - retta.m, 2) - ((4 * self.__a) * (self.__c - retta.q))
-        # return d
-
-        if d == 0:
-            x = (-self.__b + sqrt(d)) / (2 * self.__a)
-            y = self.trovaY(x)
-            return x, y
-        elif d > 0:
-            x1 = (-self.__b + sqrt(d)) / (2 * self.__a)
-            x2 = (-self.__b - sqrt(d)) / (2 * self.__a)
-            y1 = self.trovaY(x1)
-            y2 = self.trovaY(x2)
-            return (x1, y1), (x2, y2)
-        elif d < 0:
-            return None
+        matrix_a = np.array([[self.__a, self.__b], [retta.a, retta.b]])
+        matrix_b = np.array([self.__c, retta.c])
+        matrix_c = np.linalg.solve(matrix_a, matrix_b)
+        return matrix_c[0], matrix_c[1]
 
 
 if __name__ == '__main__':
 
-    parabola = Parabola(0, 2, 0, 1)
-    retta = Retta(0, -1, 1, -2)
-
-    parabola2 = Parabola(0, 1, 0, 0)
-    retta2 = Retta(0, 0, 1, -10)
+    parabola = Parabola(0, 1, 0, 0)
+    retta = Retta(1, -0.8, (0, 1))
 
     print(retta.m, retta.q)
     print(parabola.intersezione(retta))
-
-    print(retta2.m, retta2.q)
-    print(parabola2.intersezione(retta2))

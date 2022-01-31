@@ -1,5 +1,6 @@
 import os
 import sys
+from matplotlib.pyplot import arrow
 import pygame
 from math import *
 from random import randint
@@ -15,6 +16,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 1024, 576
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Gioco Pygame')
 score = 0
 lives = 3
 debug = False
@@ -60,12 +62,15 @@ class Player:
 # Target class
 
 
-class Target:
+class Target(pygame.sprite.Sprite):
     def __init__(self, x, y, acceleration=0.2):
+        super().__init__()
         self.x, self.y = x, y
         self.image = pygame.image.load(
             basefolder + 'target.png'
         )
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
         self.speed = 0
         self.acceleration = acceleration
         self.score = 10
@@ -76,20 +81,27 @@ class Target:
     def update(self, delta):
         self.speed -= self.acceleration * delta
         self.x += int(self.speed)
+        self.rect.center = self.x, self.y
         if self.speed < -1:
             self.speed = 0
+    
+    def on_hit(self):
+        global score
+        score += self.score
 
 
 # Arrow class
 
 
-class Arrow:
+class Arrow(pygame.sprite.Sprite):
     def __init__(self, trajectory):
+        super().__init__()
         self.image = pygame.image.load(
             basefolder + 'arrow.png'
         )
         self.rect = self.image.get_rect()
         self.rect.x = -self.rect.width
+        self.mask = pygame.mask.from_surface(self.image)
         self.trajectory = trajectory
         self.counter = 0
         self.prev_counter = 0
@@ -124,17 +136,25 @@ class Arrow:
 
             counter_increase = map_range(
                 pygame.Vector2(player.rect.center).distance_to(self.mouse), 0, pygame.Vector2(
-                    player.rect.center).distance_to(pygame.Vector2(WIDTH, 0)), 0.15, 5
+                    player.rect.center).distance_to(pygame.Vector2(WIDTH, 0)), 0.15, 10
             )
             if counter_increase < 0.15:
                 counter_increase = 0.15
             self.counter += counter_increase
 
+    def check_collisions(self):
+        global score
+        hits = pygame.sprite.spritecollide(self, targets, True, pygame.sprite.collide_mask)
+        for i in hits:
+            score += i.score
+        return hits
+        
+
 
 player = Player(64, HEIGHT - 128)
 
 # Targets init
-targets = []
+targets = pygame.sprite.Group()
 targets_spawn_time = 3500
 previous_target_ticks = pygame.time.get_ticks()
 
@@ -154,13 +174,13 @@ bow = pygame.image.load(basefolder + 'bow.png')
 angle = 0
 
 # Arrow init
-arrows = []
+arrows = pygame.sprite.Group()
 fire_rate = 1000
 previous_fire_ticks = pygame.time.get_ticks()
 
 while lives > 0:
 
-    dt = clock.tick()
+    dt = clock.tick(60)
 
     current_ticks = pygame.time.get_ticks()
     mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
@@ -176,15 +196,16 @@ while lives > 0:
 
     # Handling the targets
     if current_ticks - previous_target_ticks >= targets_spawn_time:
-        targets.append(Target(WIDTH, randint(0, HEIGHT - 110)))
+        # targets.append(Target(WIDTH, randint(0, HEIGHT - 110)))
+        targets.add(Target(WIDTH, randint(0, HEIGHT - 110)))
         previous_target_ticks = current_ticks
 
-    for i, e in list(enumerate(targets))[::-1]:
-        e.update(dt)
-        e.draw()
-        if e.x <= -e.image.get_rect().width:
-            del targets[i]
-            # lives -= 1
+    for i in list(targets)[::-1]:
+        i.update(dt)
+        i.draw()
+        if i.x <= -i.image.get_rect().width:
+            targets.remove(i)
+            lives -= 1
 
     # Animate the ground
     if frame_counter % 12 == 0:
@@ -239,7 +260,7 @@ while lives > 0:
                 debug = not debug
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if current_ticks - previous_fire_ticks >= fire_rate:
-                arrows.append(Arrow(trajectory))
+                arrows.add(Arrow(trajectory))
                 previous_fire_ticks = current_ticks
 
     for i in range(len(trajectory)):
@@ -250,16 +271,14 @@ while lives > 0:
             pygame.draw.ellipse(screen, (255, 255, 255), rect)
 
     # Handling the arrows
-    for i, e in list(enumerate(arrows))[::-1]:
-        e.update()
-        e.draw()
-        hit = e.rect.collidelist([i.image.get_rect() for i in targets])
-        print(hit)
-        if hit != -1:
-            score += targets[hit].score
-            del targets[hit]
-        if e.rect.bottom >= HEIGHT - ground_frames[ground_frame_counter].get_rect().height or e.counter >= len(e.trajectory):
-            del arrows[i]
+    for i in list(arrows)[::-1]:
+        i.update()
+        i.draw()
+        hits = i.check_collisions()
+        if hits:
+            arrows.remove(i)
+        if i.rect.bottom >= HEIGHT - ground_frames[ground_frame_counter].get_rect().height or i.counter >= len(i.trajectory):
+            arrows.remove(i)
 
     # Debug view
     if debug:
