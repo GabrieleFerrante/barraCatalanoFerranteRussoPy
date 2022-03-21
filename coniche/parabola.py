@@ -1,6 +1,6 @@
 from math import sqrt, pow
 import numpy as np
-from retta import Retta
+from coniche.retta import Retta
 
 
 class Parabola:
@@ -89,4 +89,4 @@ if __name__ == '__main__':
     retta = Retta(1, -0.8, (0, 1))
 
     print(retta.m, retta.q)
-    print(parabola.intersezione(retta))
+    print(parabola.intersezione_retta(retta))

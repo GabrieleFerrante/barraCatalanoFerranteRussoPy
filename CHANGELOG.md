@@ -2,23 +2,24 @@
 
 Cambiamenti relativi al gioco in Python  
 
-
-## **[0.3.0]** - *31.01.2022*
+## **[0.3.1]**
 ---
-### **Added**
-* Collisioni delle frecce con i bersagli
-### **Fixed**
+* Risolto un problema che causava un crash all'avvio su sistemi operativi diversi da Windows
+* Riordinato il codice di gioco
+
+## **[0.3.0]**
+---
+* Aggiunte le collisioni delle frecce con i bersagli
 * Bilanciata la velocità delle frecce
 
 
-## **[0.2.0]** - *26.01.2022*
+## **[0.2.0]**
 ---
-### **Added**
-* Punteggio
-* Vite
+
+* Introdotto il punteggio
+* Introdotte le vite
   * Rimosse quando un bersaglio esce dallo schermo
-* Prima forma di *HUD*
-### **Fixed**
+* Introdotta una basica *HUD*
 * Ridotta la velocità dei bersagli
 * Risolto un bug della rotazione delle frecce che causava un crash
 * Riordinato il codice
@@ -26,24 +27,23 @@ Cambiamenti relativi al gioco in Python
 * Collisioni delle frecce con i bersagli
 
 
-## **[0.1.2]** - *23.01.2022*
+## **[0.1.2]**
 ---
-### **Added**
-* Rotazione delle frecce
-### **Fixed**
+
+* Aggiunta la rotazione delle frecce
 * Tempo di creazione dei bersagli aumentato da *3,0s* a *3,5s*
 * Ripulito il codice
 
 
-## **[0.1.1]** - *20.01.2022*
+## **[0.1.1]**
 ---
-### **Added**
+
 * Possibilità di scoccare una freccia usando la traiettoria parabolica
 
 
-## **[0.1.0]** - *17.01.2022*
+## **[0.1.0]**
 ---
-### **Added**
+
 * Base del gioco con:
   * Sistema di creazione dei bersagli
   * Calcolo della traiettoria con la parabola passante per tre punti
