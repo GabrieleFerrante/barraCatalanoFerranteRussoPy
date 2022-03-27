@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
+from tokenize import group
 import pygame
+from random import randint
 from math import *
 
 
@@ -97,11 +99,12 @@ class Player:
 class Target(pygame.sprite.Sprite):
     '''Classe del bersaglio'''
 
-    def __init__(self, x, y, acceleration=0.2):
+    def __init__(self, x, y, group, acceleration=0.2):
         '''Costruttore del bersaglio
         
         x: Posizione x del bersaglio
         y: Posizione y del bersaglio
+        group: Gruppo contenente il bersaglio
         acceleration: Accelerazione del bersaglio
         '''
         super().__init__()
@@ -114,6 +117,7 @@ class Target(pygame.sprite.Sprite):
         self.speed = 0
         self.acceleration = acceleration
         self.score = 10
+        self.group = group
 
     def draw(self, screen):
         '''Disegna il bersaglio
@@ -123,18 +127,22 @@ class Target(pygame.sprite.Sprite):
 
         screen.blit(self.image, (self.x, self.y))
 
-    def update(self, delta):
-        '''Aggiorna la posizione del bersaglio
-        
-        delta: Il delta-time
-        '''
+    def update(self, delta=1):
+        '''Aggiorna la posizione del bersaglio'''
 
         self.speed -= self.acceleration * delta
         self.x += int(self.speed)
         self.rect.center = self.x, self.y
         if self.speed < -1:
             self.speed = 0
-    
+        
+        if self.rect.right == 0:
+            self.destroy()
+            return True
+        else:
+            return False
+
+
     def on_hit(self, glob_score):
         '''Aumenta il punteggio quando il bersaglio viene colpito
         
@@ -142,17 +150,33 @@ class Target(pygame.sprite.Sprite):
         '''
 
         glob_score[0] += self.score
+        self.destroy()
+    
+    def destroy(self):
+        '''Rimuove il bersaglio dal gruppo di sprite, eliminandola'''
+
+        self.group.remove(self)
+
+    
+    @classmethod
+    def target_spawner(cls, group, time_passed, spawn_time):
+        if time_passed >= spawn_time:
+            # Se passa abbastanza tempo aggiungi un bersaglio
+            group.add(Target(WIDTH, randint(
+                0,HEIGHT - 110), group))
+            return True
 
 
 
 class Arrow(pygame.sprite.Sprite):
     '''Classe della freccia'''
 
-    def __init__(self, trajectory, mouse_pos):
+    def __init__(self, trajectory, mouse_pos, group):
         '''Costruttore della freccia
         
         trajectory: Traiettoria della freccia sotto forma di parabola
         mouse_pos: Posizione del cursore nell'istante di inizializzazione
+        group: Gruppo di sprite contenente la freccia (pygame.sprite.Group)
         '''
         
         super().__init__()
@@ -169,6 +193,7 @@ class Arrow(pygame.sprite.Sprite):
         self.angle = -45
         self.mouse = mouse_pos
         self.mouse.y = HEIGHT - self.mouse.y
+        self.group = group
 
     def draw(self, screen):
         '''Disegna la freccia sullo schermo
@@ -179,7 +204,8 @@ class Arrow(pygame.sprite.Sprite):
         rotated_arrow, rotated_arrow_rect = rot_from_zero(
             self.image, self.angle)
         rotated_arrow_rect.center = self.rect.center
-        self.mask = pygame.mask.from_surface(rotated_arrow)
+        self.rect = rotated_arrow_rect
+        
         screen.blit(rotated_arrow, rotated_arrow_rect)
 
     def update(self, player):
@@ -214,6 +240,13 @@ class Arrow(pygame.sprite.Sprite):
                 counter_increase = 0.15
             self.counter += counter_increase
 
+        print(self.angle)
+
+        if (self.rect.bottom >= HEIGHT - 64) or self.counter >= len(self.trajectory):
+            self.destroy()
+        
+        
+
     def check_collisions(self, targets, glob_score):
         '''Controlla collisioni con la freccia
         
@@ -224,4 +257,55 @@ class Arrow(pygame.sprite.Sprite):
         hits = pygame.sprite.spritecollide(self, targets, True, pygame.sprite.collide_mask)
         for i in hits:
             i.on_hit(glob_score)
-        return hits
+        
+        if hits:
+            self.destroy()
+
+    def destroy(self):
+        '''Rimuove la freccia dal gruppo di sprite, eliminandola'''
+
+        self.group.remove(self)
+
+
+    @classmethod
+    def arrow_spawner(cls, group, time_passed, spawn_time, trajectory, mouse_pos):
+        if time_passed >= spawn_time:
+            # Se passa abbastanza tempo aggiungi un bersaglio
+            group.add(Arrow(trajectory, mouse_pos, group))
+            return True
+
+
+class Ground:
+    '''Classe del terreno'''
+
+    def __init__(self, x, y, acceleration=0.2):
+        '''Costruttore del terreno'''
+
+        self.image = pygame.image.load(
+            os.path.join(basefolder, 'sprites', 'ground.png')
+        )
+        self.rect = self.image.get_rect()
+        self.rect.topleft = x, y
+        self.speed = 0
+        self.acceleration = acceleration
+
+    def draw(self, screen):
+        '''Disegna il terreno
+        
+        screen: Riferimento alla finestra di gioco
+        '''
+
+        offset_rect = self.rect.copy()
+        offset_rect.x += self.image.get_width()
+        screen.blit(self.image, self.rect)
+        screen.blit(self.image, offset_rect)
+
+    def update(self, delta=1):
+        '''Aggiorna la posizione del terreno'''
+
+        self.speed -= self.acceleration * delta
+        self.rect.x += int(self.speed)
+        if self.speed < -1:
+            self.speed = 0
+        if self.rect.right <= 0:
+            self.rect.left = 0

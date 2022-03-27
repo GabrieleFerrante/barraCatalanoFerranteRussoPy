@@ -2,10 +2,20 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.3.2]**
+---
+* Risolti i problemi di collisione delle frecce
+* Aggiornati gli sprite di:
+  * Frecce
+  * Bersagli
+  * Terreno
+* Riordinato il codice di gioco
+
 ## **[0.3.1]**
 ---
 * Risolto un problema che causava un crash all'avvio su sistemi operativi diversi da Windows
 * Riordinato il codice di gioco
+
 
 ## **[0.3.0]**
 ---
