@@ -160,6 +160,16 @@ class Target(pygame.sprite.Sprite):
     
     @classmethod
     def target_spawner(cls, group, time_passed, spawn_time):
+        '''Crea una freccia (Metodo di classe)
+        
+        group: Gruppo che dovrà contenere 
+               il bersaglio creato (pygame.sprite.Group)
+        time_passed: Tempo passato dalla creazione 
+                     dell'ultimo bersaglio in millisecondi
+        spawn_time: Tempo di spawn del bersaglio
+        '''
+
+        
         if time_passed >= spawn_time:
             # Se passa abbastanza tempo aggiungi un bersaglio
             group.add(Target(WIDTH, randint(
@@ -269,6 +279,16 @@ class Arrow(pygame.sprite.Sprite):
 
     @classmethod
     def arrow_spawner(cls, group, time_passed, spawn_time, trajectory, mouse_pos):
+        '''Crea una freccia (Metodo di classe)
+        
+        group: Gruppo che dovrà contenere la freccia creata (pygame.sprite.Group)
+        time_passed: Tempo passato dalla creazione 
+                    dell'ultima freccia in millisecondi
+        spawn_time: Tempo di spawn della freccia
+        trajectory: La traiettoria parabolica
+        mouse_pos: Posizione del mouse
+        '''
+
         if time_passed >= spawn_time:
             # Se passa abbastanza tempo aggiungi un bersaglio
             group.add(Arrow(trajectory, mouse_pos, group))

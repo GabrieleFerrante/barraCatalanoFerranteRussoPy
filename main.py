@@ -12,9 +12,10 @@ basefolder = str(Path(__file__).parent)
 
 
 class Game:
+    '''Classe del gioco'''
 
     def __init__(self):
-        # Inizializzazione
+        '''Costruttore della classe di gioco'''
         pygame.init()
 
         self.WIDTH, self.HEIGHT = 1024, 576
@@ -51,12 +52,23 @@ class Game:
         self.previous_fire_ticks = pygame.time.get_ticks()
 
     def shoot(self, ticks, trajectory, mouse_pos):
+        '''Scocca una freccia
+        
+        ticks: I tick al momento del richiamo (pygame.time.get_ticks) 
+        trajectory: La traiettoria parabolica
+        mouse_pos: Posizione del mouse
+        '''
         arrow_shot = Arrow.arrow_spawner(self.arrows, ticks - self.previous_fire_ticks, self.fire_rate, trajectory, mouse_pos)
         if arrow_shot:
             self.previous_fire_ticks = ticks
 
 
     def draw_all(self, trajectory):
+        '''Disegna tutti gli elementi di gioco
+        
+        trajectory: La traiettoria parabolica
+        '''
+
         self.screen.fill((101, 203, 214))
 
         self.player.draw(self.screen, self.frame_counter, 12)
@@ -79,6 +91,11 @@ class Game:
 
 
     def draw_bow(self, trajectory):
+        '''Disegna l'arco propriamente ruotato
+        
+        trajectory: La traiettoria parabolica
+        '''
+
         # Calcolare l'angolo dell'arco con il seno
         bow_rot_index = 5
         if bow_rot_index > len(trajectory) - 1:
@@ -99,18 +116,26 @@ class Game:
         self.screen.blit(rotated_bow, rotated_bow_rect)
 
     def input(self, ticks, trajectory, mouse_pos):
-        # Input
+        '''Gestisci gli input
+        
+        ticks: I tick al momento del richiamo (pygame.time.get_ticks) 
+        trajectory: La traiettoria parabolica
+        mouse_pos: Posizione del mouse
+        '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LSHIFT:
+                if event.key == pygame.K_BACKSLASH:
                     self.debug_mode = not self.debug_mode
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.shoot(ticks, trajectory, mouse_pos)
 
     def calculate_trajectory(self, mouse_pos):
-        # Calcolare la traiettoria
+        '''Calcola la traiettoria
+        
+        mouse_pos: Posizione del mouse
+        '''
         trajectory_parabola = Parabola(
             1,
             self.player.rect.center,
@@ -121,8 +146,9 @@ class Game:
             self.player.rect.centerx, mouse_pos.x * 2)]
         return trajectory
 
-    def mainloop(self):
-        # Loop di gioco
+    def gameloop(self):
+        '''Loop di gioco'''
+
         while self.lives > 0:
 
             dt = self.clock.tick(60)
@@ -146,7 +172,7 @@ class Game:
                     self.lives -= 1
                 # Aggiorna i bersagli
 
-            # Anima il terreno
+            # Aggiorna il terreno
             self.ground.update(dt)
 
             self.input(current_ticks, trajectory, mouse_pos)
@@ -155,7 +181,7 @@ class Game:
             for i in list(self.arrows)[::-1]:
                 i.check_collisions(self.targets, self.score)
                 i.update(self.player)
-                # Disegna e aggiorna tutte le frecce
+                # Aggiorna tutte le frecce
 
             # Debug mode
             if self.debug_mode:
@@ -169,11 +195,18 @@ class Game:
             self.frame_counter += 1
 
     def hud(self):
+        '''Disegna e gestisci la HUD'''
+
         score_label = self.font_obj.render(f"{self.score[0]}", 1, (0, 0, 0))
         score_rect = score_label.get_rect(center=(self.WIDTH/2, 32))
         self.screen.blit(score_label, score_rect)
 
     def debug(self, mouse_pos, trajectory):
+        '''Modalità debug
+        
+        mouse: Posizione del mouse
+        trajectory: La traiettoria
+        '''
         try:
             pygame.draw.lines(self.screen, (0, 0, 0), False, trajectory)
         except:
@@ -194,4 +227,4 @@ class Game:
 if __name__ == '__main__':
     gm = Game()
 
-    gm.mainloop()
+    gm.gameloop()
