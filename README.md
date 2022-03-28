@@ -6,7 +6,6 @@ Il gruppo è formato da [Jorge Russo](https://github.com/Jo-333), [Gabriele Ferr
   - [**Descrizione**](#descrizione)
     - [**Le formule matematiche**](#le-formule-matematiche)
     - [**Logica del gioco**.](#logica-del-gioco)
-  - [**Problemi noti**](#problemi-noti)
   - [**Ruoli**](#ruoli)
 
 </br>
@@ -34,7 +33,7 @@ Grazie a ciò sarà possibile comparare i migliori punteggi realizzati dai gioca
 
 ### **Le formule matematiche**
 
-La traiettoria delle frecce sfrutta la parabola realizzata in Python, passante per tre punti:  
+La parabola realizzata in Python è sfruttata per calcolare la traiettoria delle frecce, passante per tre punti:  
 * La posizione del giocatore
 * La posizione del mouse che coincide con il vertice
 * Il punto simmetrico rispetto alla posizione del giocatore
@@ -45,10 +44,21 @@ Per trovare i parametri *a*, *b* e *c* della traiettoria si risolve il sistema l
 
 ![Diagramma della logica del gioco](https://github.com/GabrieleFerrante/barraCatalanoFerranteRussoPy/blob/main/diagramma-gioco.png?raw=true)
 
+Il diagramma rappresenta la logica dietro al gioco.  
 
-## **Problemi noti**
-
-* Le collisioni tra frecce e bersagli non funzionano correttamente
+* **\_\_init\_\_()**: inizializza tutte le variabili del gioco, come le dimensioni della finestra, le vite o il punteggio;
+* **title_screen()**: disegna e gestisce la schermata del titolo, con relativi pulsanti per iniziare una partita o visualizzare la classifica;
+* **gameloop()**: loop del gioco, che gestisce tutti i processi principali di una partita;
+  * **shoot()**: spara una freccia;
+  * **Arrow()**: classe di una freccia;
+    * **Arrow.update()**: aggiorna la posizione e l'angolazione; se esce dallo schermo o tocca il terreno cancellala;
+    * **Arrow.check_collisions()**: controlla se la freccia collide con un bersaglio, se si cancellala, cancella il bersaglio e aumenta il punteggio;
+  * **Target()**: classe di un bersaglio;
+    * **Target.target_spawner()**: metodo di classe, crea periodicamente nuovi bersagli ad un'altezza casuale;
+    * **Target.update()**: aggiorna la posizione del bersaglio, se esce dallo schermo togli una vita;
+* **draw_all()**: disegna tutti gli elementi di gioco sullo schermo;
+* **hud()**: disegna la *HUD*;
+* **end_screen()**: disegna e gestisce la schermata di fine partita.
 
 
 ## **Ruoli**
