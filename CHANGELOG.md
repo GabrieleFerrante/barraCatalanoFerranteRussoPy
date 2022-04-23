@@ -2,6 +2,18 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.4.0]**
+---
+* Aggiunto il menu principale
+  * Il nome BIG SHOT non è definitivo
+* Aggiunta la possibilità di mettere in pausa il gioco
+* Aggiunto uno sfondo con un effetto di parallasse
+* La HUD ora mostra le vite rimanenti
+* Aggiunto il record
+  * Al momento il record non è salvato alla chiusura del gioco
+* Ora si può selezionare la difficoltà tra FACILE, NORMALE, DIFFICILE
+  * Il record differisce tra le tre difficoltà
+
 ## **[0.3.2]**
 ---
 * Risolti i problemi di collisione delle frecce

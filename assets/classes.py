@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from tokenize import group
 import pygame
 from random import randint
 from math import *
@@ -32,6 +31,7 @@ def map_range(value, leftMin, leftMax, rightMin, rightMax):
 basefolder = str(Path(__file__).parent)
 
 WIDTH, HEIGHT = 1024, 576
+_acceleration = 3
 
 class Spritesheet:
     '''Classe per le spritesheet
@@ -42,7 +42,7 @@ class Spritesheet:
     def __init__(self, filename, size, horizontal=True):
         self.filename = filename
         self.size = size
-        self.sprite_sheet = pygame.image.load(self.filename).convert()
+        self.sprite_sheet = pygame.image.load(self.filename).convert_alpha()
         if horizontal:
             self.frames = self.sprite_sheet.get_width() // self.size
         else:
@@ -99,7 +99,7 @@ class Player:
 class Target(pygame.sprite.Sprite):
     '''Classe del bersaglio'''
 
-    def __init__(self, x, y, group, acceleration=0.2):
+    def __init__(self, x, y, group, acceleration=_acceleration):
         '''Costruttore del bersaglio
         
         x: Posizione x del bersaglio
@@ -111,7 +111,7 @@ class Target(pygame.sprite.Sprite):
         self.x, self.y = x, y
         self.image = pygame.image.load(
             os.path.join(basefolder, 'sprites', 'target.png')
-        )
+        ).convert_alpha()
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.speed = 0
@@ -127,16 +127,18 @@ class Target(pygame.sprite.Sprite):
 
         screen.blit(self.image, (self.x, self.y))
 
-    def update(self, delta=1):
+    def update(self, state, delta=1):
         '''Aggiorna la posizione del bersaglio'''
 
-        self.speed -= self.acceleration * delta
-        self.x += int(self.speed)
-        self.rect.center = self.x, self.y
+
+        if state != 2:
+            self.speed -= self.acceleration * delta
+            self.x += int(self.speed)
+            self.rect.center = self.x, self.y
         if self.speed < -1:
             self.speed = 0
         
-        if self.rect.right == 0:
+        if self.rect.right <= 0:
             self.destroy()
             return True
         else:
@@ -192,7 +194,7 @@ class Arrow(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load(
             os.path.join(basefolder, 'sprites', 'arrow.png')
-        )
+        ).convert_alpha()
         self.image = pygame.transform.scale(self.image, (48, 48))
         self.rect = self.image.get_rect()
         self.rect.x = -self.rect.width
@@ -250,7 +252,6 @@ class Arrow(pygame.sprite.Sprite):
                 counter_increase = 0.15
             self.counter += counter_increase
 
-        print(self.angle)
 
         if (self.rect.bottom >= HEIGHT - 64) or self.counter >= len(self.trajectory):
             self.destroy()
@@ -295,22 +296,20 @@ class Arrow(pygame.sprite.Sprite):
             return True
 
 
-class Ground:
-    '''Classe del terreno'''
+class ScrollingElement:
+    '''Classe di un elemento scorrevole'''
 
-    def __init__(self, x, y, acceleration=0.2):
-        '''Costruttore del terreno'''
+    def __init__(self, x, y, image, acceleration=_acceleration):
+        '''Costruttore dell'elemento'''
 
-        self.image = pygame.image.load(
-            os.path.join(basefolder, 'sprites', 'ground.png')
-        )
+        self.image = image
         self.rect = self.image.get_rect()
         self.rect.topleft = x, y
         self.speed = 0
         self.acceleration = acceleration
 
     def draw(self, screen):
-        '''Disegna il terreno
+        '''Disegna l'elemento
         
         screen: Riferimento alla finestra di gioco
         '''
@@ -320,12 +319,71 @@ class Ground:
         screen.blit(self.image, self.rect)
         screen.blit(self.image, offset_rect)
 
-    def update(self, delta=1):
-        '''Aggiorna la posizione del terreno'''
+    def update(self, state, delta=1):
+        '''Aggiorna la posizione dell'elemento'''
 
-        self.speed -= self.acceleration * delta
-        self.rect.x += int(self.speed)
+        if state != 2:
+            self.speed -= self.acceleration * delta
+            self.rect.x += int(self.speed)
         if self.speed < -1:
             self.speed = 0
         if self.rect.right <= 0:
             self.rect.left = 0
+
+
+class Sky:
+    '''Classe del cielo'''
+
+    def __init__(self):
+        '''Costruttore del cielo'''
+        
+        layer1_image = pygame.image.load(os.path.join(basefolder, 'sprites', 'background', 'layer1.png')).convert_alpha()
+        layer2_image = pygame.image.load(os.path.join(basefolder, 'sprites', 'background', 'layer2.png')).convert_alpha()
+        layer3_image = pygame.image.load(os.path.join(basefolder, 'sprites', 'background', 'layer3.png')).convert_alpha()
+
+        self.layer3 = ScrollingElement(0, 30, layer3_image, 0.10)
+        self.layer2 = ScrollingElement(-70, 172, layer2_image, 0.14)
+        self.layer1 = ScrollingElement(47, 250, layer1_image, 0.18)
+
+    def draw(self, screen):
+        '''Disegna il cielo'''
+
+        self.layer3.draw(screen)
+        self.layer2.draw(screen)
+        self.layer1.draw(screen)
+
+    def update(self, state):
+        '''Aggiorna le posizioni del cielo'''
+
+        self.layer1.update(state)
+        self.layer2.update(state)
+        self.layer3.update(state)
+
+
+class BaseButton:
+    '''Classe base del bottone'''
+
+    def __init__(self, x, y, image, command=None, scale=1) -> None:
+        '''Costruttore del bottone'''
+
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.command = command
+        self.clicked = False
+
+    def draw(self, screen):
+        mouse_pos = pygame.math.Vector2(pygame.mouse.get_pos())
+
+        if self.rect.collidepoint(mouse_pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                if self.command:
+                    self.command()
+        
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        screen.blit(self.image, (self.rect.x, self.rect.y))

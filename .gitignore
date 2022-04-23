@@ -217,4 +217,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# SVG files
+*.svg
+
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,pycharm,windows
