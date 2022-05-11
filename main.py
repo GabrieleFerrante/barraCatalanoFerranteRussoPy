@@ -38,6 +38,9 @@ class Game:
             os.path.join(basefolder, 'assets', 'font.ttf'), 32)
         self.font24 = pygame.font.Font(
             os.path.join(basefolder, 'assets', 'font.ttf'), 24)
+        self.font18 = pygame.font.Font(
+            os.path.join(basefolder, 'assets', 'font.ttf'), 18)
+
 
         # Inizializza il giocatore
         self.player = Player(64, self.HEIGHT - (64 + 96), os.path.join(
@@ -79,7 +82,7 @@ class Game:
             self.previous_fire_ticks = ticks
 
 
-    def draw_all(self, trajectory):
+    def draw_all(self, trajectory, mouse_pos, equation = ''):
         '''Disegna tutti gli elementi di gioco
         
         trajectory: La traiettoria parabolica
@@ -107,7 +110,11 @@ class Game:
             arrow.draw(self.screen)
         self.ground.draw(self.screen)
         self.draw_bow(trajectory)
-        
+
+        equation_label = self.font18.render(equation, False, (0, 0, 0))
+        equation_rect = equation_label.get_rect()
+        equation_rect.center = (mouse_pos.x, mouse_pos.y - 28)
+        self.screen.blit(equation_label, equation_rect)
 
     def draw_bow(self, trajectory):
         '''Disegna l'arco propriamente ruotato
@@ -171,7 +178,7 @@ class Game:
         )
         trajectory = [pygame.Vector2(i[0], int(i[1])) for i in trajectory_parabola.punti(
             self.player.rect.centerx, mouse_pos.x * 2)]
-        return trajectory
+        return trajectory, trajectory_parabola.equazione()
 
     def cycle_difficulty(self):
         '''Cambia la difficoltà'''
@@ -266,7 +273,7 @@ class Game:
 
             self.sky.update(self.state)
 
-            trajectory = self.calculate_trajectory(mouse_pos)
+            trajectory, equation = self.calculate_trajectory(mouse_pos)
 
         
             # Gestione dei bersagli
@@ -291,7 +298,7 @@ class Game:
                 i.update(self.player)
 
             self.input(current_ticks, trajectory, mouse_pos)
-            self.draw_all(trajectory)
+            self.draw_all(trajectory, mouse_pos, equation)
             self.hud()
 
             # Debug mode

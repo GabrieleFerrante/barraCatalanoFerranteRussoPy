@@ -1,4 +1,3 @@
-from math import sqrt, pow
 import numpy as np
 from coniche.retta import Retta
 
@@ -74,6 +73,26 @@ class Parabola:
             output.append((x, self.trovaY(x)))
         return output
 
+    def equazione(self):
+        a = f'{round(self.__a, 2)}x^2' if round(self.__a, 2) != 0 else ''
+        a = f'{a}' if self.__a != 1 else 'x^2'
+        if a == 'x^2' and self.__a < 0:
+            a = f'-{a}'
+        
+        b = f'+{round(self.__b, 2)}x' if self.__b != 1 else 'x'
+        if self.__b < 0:
+            if b == 'x':
+                b = f'-{b}'
+            else:
+                b = b.replace('+', '')
+        b = f'{b}' if round(self.__b, 2) != 0 else ''
+        
+        c = f'+{round(self.__c, 2)}' if self.__c != 0 else ''
+        if self.__c < 0:
+            c = c.replace('+', '')
+        
+        return f'y={a}{b}{c}'
+
     def intersezione_retta(self, retta):  # WIP; Le formule dovrebbero essere corrette, ma i risultati non lo sono
         if type(retta) != Retta:
             raise Exception("L'input non è una retta")
@@ -85,8 +104,7 @@ class Parabola:
 
 if __name__ == '__main__':
 
-    parabola = Parabola(0, 1, 0, 0)
-    retta = Retta(1, -0.8, (0, 1))
+    parabola = Parabola(0, 4, 2,-3)
 
-    print(retta.m, retta.q)
-    print(parabola.intersezione_retta(retta))
+    print(parabola.a, parabola.b, parabola.c)
+    print(parabola.equazione())

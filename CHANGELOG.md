@@ -2,6 +2,11 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.4.1]**
+---
+* Ora l'equazione della traiettoria è visualizzata durante il gioco
+
+
 ## **[0.4.0]**
 ---
 * Aggiunto il menu principale
