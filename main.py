@@ -1,7 +1,9 @@
 import os
 import sys
-from pathlib import Path
 import pygame
+import pygame_textinput
+import assets.database as db
+from pathlib import Path
 from math import *
 from random import randint
 from coniche.parabola import Parabola
@@ -9,27 +11,29 @@ from assets.classes import Player, Arrow, Target, ScrollingElement, Sky, BaseBut
 
 
 basefolder = str(Path(__file__).parent)
-
+save_folder = os.path.join(basefolder, 'bigshot_savedata')
+set_prefix = 'bigShot_scores_'
 
 class Game:
     '''Classe del gioco'''
-
 
     def __init__(self):
         '''Costruttore della classe di gioco'''
         pygame.init()
 
+        # Inizializza tutte le variabili e costanti interne
         self.WIDTH, self.HEIGHT = 1024, 576
         self.DIFFICULTIES = ['FACILE', 'NORMALE', 'DIFFICILE']
         self.difficulty = 1
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-        pygame.display.set_caption('Gioco Pygame')
+        pygame.display.set_caption('Big Shot')
         self.score = [0]
         self.high_scores = [0, 0, 0]
         self.lives = 3
         self.debug_mode = False
+        self.synced = False
 
-        self.STATES = {'MENU': 0, 'GAME': 1, 'PAUSED': 2, 'END': 3}
+        self.STATES = {'MENU': 0, 'GAME': 1, 'PAUSED': 2, 'END': 3, 'LEADERBOARD': 4, 'ASK_NAME': 5}
         self.state = self.STATES['MENU']
         
         self.clock = pygame.time.Clock()
@@ -40,7 +44,6 @@ class Game:
             os.path.join(basefolder, 'assets', 'font.ttf'), 24)
         self.font18 = pygame.font.Font(
             os.path.join(basefolder, 'assets', 'font.ttf'), 18)
-
 
         # Inizializza il giocatore
         self.player = Player(64, self.HEIGHT - (64 + 96), os.path.join(
@@ -67,6 +70,35 @@ class Game:
         self.fire_rate = 1000
         self.previous_fire_ticks = pygame.time.get_ticks()
 
+        # Controlla se il giocatore ha scelto un nome
+        # Se no chiedi al giocatore di impostarlo
+
+        if not os.path.exists(os.path.join(save_folder, 'name.dat')):
+            self.state = self.STATES['ASK_NAME']
+
+
+
+    def sync_data(self):
+        '''Sincronizza i dati di gioco all'avvio'''
+
+        # Se il file name.dat esiste leggi il contenuto e assegna il nome
+        if os.path.exists(os.path.join(save_folder, 'name.dat')):
+            with open(os.path.join(save_folder, 'name.dat'), 'r') as f:
+                lines = f.readlines()
+                self.name = lines[0][:8]
+
+        # Se il file id.dat esiste leggi il contenuto e assegna l'id
+        id_path = os.path.join(save_folder, 'id.dat')
+        db.id_file(id_path, db.generate_id())
+        if os.path.exists(id_path):
+            with open(id_path, 'r') as f:
+                lines = f.readlines()
+                self.id = int(lines[0])
+
+        # Sincronizza i punteggi dal database
+        for i, difficulty in enumerate(['EASY', 'NORMAL', 'HARD']):
+            self.high_scores[i] = db.get_score(set_prefix + difficulty, str(self.id), self.name)
+
     def shoot(self, ticks, trajectory, mouse_pos):
         '''Scocca una freccia
         
@@ -75,30 +107,33 @@ class Game:
         mouse_pos: Posizione del mouse
         '''
 
-        if mouse_pos.x <= self.player.rect.centerx:
+        if mouse_pos.x <= self.player.rect.centerx: # Limita il raggio d'azione. Non si può sparare dietro al giocatore
             return
-        arrow_shot = Arrow.arrow_spawner(self.arrows, ticks - self.previous_fire_ticks, self.fire_rate, trajectory, mouse_pos)
-        if arrow_shot:
-            self.previous_fire_ticks = ticks
+        arrow_was_shot = Arrow.arrow_spawner(self.arrows, ticks - self.previous_fire_ticks, self.fire_rate, trajectory, mouse_pos)
+        if arrow_was_shot:
+            self.previous_fire_ticks = ticks # Resetta il timer per sparare
 
 
     def draw_all(self, trajectory, mouse_pos, equation = ''):
         '''Disegna tutti gli elementi di gioco
         
         trajectory: La traiettoria parabolica
+        mouse_pos: La posizione del mouse
+        equation: L'equazione della parabola
         '''
 
         self.screen.fill((129, 212, 221))
         self.sky.draw(self.screen)
 
         self.player.draw(self.screen, self.frame_counter, 12)
-        for target in list(self.targets)[::-1]:
+        for target in list(self.targets)[::-1]: # Disegna i bersagli
             target.draw(self.screen)
 
+        # Disegna i punti rappresentanti la traiettoria
         for i in range(len(trajectory)):
             if i % 30 == 0 and i != 0:
                 decrement = map_range(i, 0, len(trajectory) // 2 - 1, 20, 0)
-                rect1 = pygame.Rect(-100, 0, decrement + 4, decrement + 4)
+                rect1 = pygame.Rect(-100, 0, decrement + 4, decrement + 4) # Linea di contorno
                 rect2 = pygame.Rect(-100, 0, decrement, decrement)
                 rect1.center = trajectory[i]
                 rect2.center = trajectory[i]
@@ -106,7 +141,7 @@ class Game:
                     pygame.draw.ellipse(self.screen, (0, 0, 0), rect1)
                     pygame.draw.ellipse(self.screen, (255, 255, 255), rect2)
 
-        for arrow in list(self.arrows)[::-1]:
+        for arrow in list(self.arrows)[::-1]: # Disegna le frecce
             arrow.draw(self.screen)
         self.ground.draw(self.screen)
         self.draw_bow(trajectory)
@@ -114,7 +149,7 @@ class Game:
         equation_label = self.font18.render(equation, False, (0, 0, 0))
         equation_rect = equation_label.get_rect()
         equation_rect.center = (mouse_pos.x, mouse_pos.y - 28)
-        self.screen.blit(equation_label, equation_rect)
+        self.screen.blit(equation_label, equation_rect) # Disegna l'equazione sotto al cursore
 
     def draw_bow(self, trajectory):
         '''Disegna l'arco propriamente ruotato
@@ -154,7 +189,7 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_BACKSLASH:
                     self.debug_mode = not self.debug_mode
-                elif event.key == pygame.K_ESCAPE:
+                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
                     self.set_state('PAUSED')
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.shoot(ticks, trajectory, mouse_pos)
@@ -198,8 +233,12 @@ class Game:
         self.score[0] = 0
         self.lives = 5 - (2 * self.difficulty)
 
-    def main_menu(self):
+    def mainmenu(self):
         '''Schermata principale'''
+        if not self.synced:
+            self.sync_data()
+            self.synced = True
+        
         title_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'title.png')).convert_alpha()
         title_rect = title_image.get_rect()
         title_y = 32
@@ -210,12 +249,14 @@ class Game:
         mode_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'mode.png')).convert_alpha()
         quit_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'quit.png')).convert_alpha()
         leaderboard_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard.png')).convert_alpha()
+        name_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'namechange.png')).convert_alpha()
 
 
         play_button = BaseButton(46, 280, play_image, self.start)
         mode_button = BaseButton(46, 350, mode_image, self.cycle_difficulty)
         quit_button = BaseButton(46, 425, quit_image, sys.exit)
         leaderboard_button = BaseButton(646, 521, leaderboard_image, lambda: print('LEADERBOARD'))
+        name_button = BaseButton(610, 465, name_image, lambda: self.set_state('ASK_NAME'))
 
         mode_text_coords = (mode_button.rect.left + mode_button.image.get_width() + 12, mode_button.rect.centery)
 
@@ -241,6 +282,7 @@ class Game:
             mode_button.draw(self.screen)
             quit_button.draw(self.screen)
             leaderboard_button.draw(self.screen)
+            name_button.draw(self.screen)
 
             mode_label = self.font32.render(self.DIFFICULTIES[self.difficulty], False, (255,255,255))
             outline = self.font32.render(self.DIFFICULTIES[self.difficulty], False, (0,0,0))
@@ -284,7 +326,6 @@ class Game:
             for i in list(self.targets)[::-1]:
                 out_of_screen = i.update(dt, self.state)
                 if out_of_screen:
-                    print('OUT OF SCREEN')
                     self.lives -= 1
                 # Aggiorna i bersagli
 
@@ -313,7 +354,13 @@ class Game:
 
             self.frame_counter += 1
             if self.lives <= 0:
-                self.set_state('MENU')
+                self.save_data()
+                self.set_state('END')
+
+    def save_data(self):
+        print('Saving...')
+        db.save_score(set_prefix + ['EASY', 'NORMAL', 'HARD'][self.difficulty], str(self.id), self.name, self.high_scores[self.difficulty])
+        print('Saved.')
 
     def pause(self):
         
@@ -321,7 +368,7 @@ class Game:
         menu_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'pausemenu', 'menu.png')).convert_alpha()
 
         continue_button = BaseButton(325, 270, continue_image, lambda: self.set_state('GAME'))
-        menu_button = BaseButton(230, 330, menu_image, lambda: self.set_state('MENU'))
+        menu_button = BaseButton(230, 330, menu_image, lambda: self.save_data() or self.set_state('MENU'))
 
 
         while self.state == self.STATES['PAUSED']:
@@ -340,8 +387,89 @@ class Game:
                         self.set_state('GAME')
             pygame.display.update()
         
+    def ask_name(self):
+
+        box = pygame_textinput.TextInputVisualizer(font_object=self.font32)
+
+        confirm_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'confirm.png')).convert_alpha()
+        confirm_button = BaseButton(321, 357, confirm_image, lambda: self.set_name(box.value))
+
+        choosename_label = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'choosename_label.png')).convert_alpha()
+
+        while self.state == self.STATES['ASK_NAME']:
+
+            events = pygame.event.get()
+
+            self.screen.fill((129, 212, 221))
+            self.sky.update(self.state)
+            self.sky.draw(self.screen)
+
+            box.update(events)
+            if len(box.value) > 8:
+                box.value = box.value[:-1]
+            
+            box_rect = box.surface.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
+            confirm_button.draw(self.screen)
+            self.screen.blit(box.surface, box_rect)
+            self.screen.blit(choosename_label, choosename_label.get_rect(topleft=(190, self.HEIGHT // 3)))
+
+            for event in events:
+                if event.type == pygame.QUIT:
+                    self.quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        self.set_name(box.value)
+                        self.state == self.STATES['MENU']
+
+            pygame.display.update()
+
+    def endscreen(self):
+        
+        gameover_label = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'endscreen', 'gameover.png')).convert_alpha()
+        yourscore_label = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'endscreen', 'score.png')).convert_alpha()
+        continue_button = BaseButton(357, 374, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'endscreen', 'continue.png')), self.start)
+        menu_button = BaseButton(288, 422, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'endscreen', 'menu.png')), lambda: self.set_state('MENU'))
+
+        gameover_rect = gameover_label.get_rect(topleft=(266, 98))
+        yourscore_rect = yourscore_label.get_rect(topleft=(216, 195))
 
 
+        while self.state == self.STATES['END']:
+            score_label = self.font32.render(str(self.score[0]), False, (0, 0, 0))
+            score_rect = score_label.get_rect(topleft=(474, 278))
+            
+            self.screen.fill((129, 212, 221))
+            self.sky.update(self.state)
+            self.sky.draw(self.screen)
+
+            self.screen.blit(gameover_label, gameover_rect)
+            self.screen.blit(yourscore_label, yourscore_rect)
+            self.screen.blit(score_label, score_rect)
+            continue_button.draw(self.screen)
+            menu_button.draw(self.screen)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+
+            pygame.display.update()
+                
+
+
+
+
+    def set_name(self, name):
+        if name == '':
+            return
+
+        path = os.path.join(save_folder, 'name.dat')
+
+        if not os.path.exists(str(Path(path).parent)):
+            os.makedirs(str(Path(path).parent))
+        with open(path, 'w') as f:
+            f.write(name)
+            self.name = name
+        self.set_state('MENU')
 
     def hud(self):
         '''Disegna e gestisci la HUD'''
@@ -391,8 +519,10 @@ class Game:
 
     def mainloop(self):
         while True:
-            self.main_menu()
+            self.ask_name()
+            self.mainmenu()
             self.gameloop()
+            self.endscreen()
             self.pause()
 
 

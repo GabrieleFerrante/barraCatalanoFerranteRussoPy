@@ -14,7 +14,9 @@ Il gruppo è formato da [Jorge Russo](https://github.com/Jo-333), [Gabriele Ferr
 
 * Python 3.9 o 3.10
 * Pygame
+  * pygame_textinput
 * Numpy
+* Modulo Redis
 
 
 ## **Descrizione**

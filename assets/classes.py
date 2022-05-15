@@ -39,7 +39,7 @@ class Spritesheet:
     Il file deve avere come colore RGB per la trasparenza (255, 0, 255)
     '''
 
-    def __init__(self, filename, size, horizontal=True):
+    def __init__(self, filename, size, horizontal=True) -> None:
         self.filename = filename
         self.size = size
         self.sprite_sheet = pygame.image.load(self.filename).convert_alpha()
@@ -61,7 +61,7 @@ class Spritesheet:
 class Player:
     '''Classe del giocatore'''
 
-    def __init__(self, x, y, image_path, sprite_size, width=32, height=32):
+    def __init__(self, x, y, image_path, sprite_size, width=32, height=32) -> None:
         '''Costruttore del giocatore
         
         x: Posizione x del giocatore
@@ -99,7 +99,7 @@ class Player:
 class Target(pygame.sprite.Sprite):
     '''Classe del bersaglio'''
 
-    def __init__(self, x, y, group, acceleration=_acceleration):
+    def __init__(self, x, y, group, acceleration=_acceleration) -> None:
         '''Costruttore del bersaglio
         
         x: Posizione x del bersaglio
@@ -183,7 +183,7 @@ class Target(pygame.sprite.Sprite):
 class Arrow(pygame.sprite.Sprite):
     '''Classe della freccia'''
 
-    def __init__(self, trajectory, mouse_pos, group):
+    def __init__(self, trajectory, mouse_pos, group) -> None:
         '''Costruttore della freccia
         
         trajectory: Traiettoria della freccia sotto forma di parabola
@@ -299,7 +299,7 @@ class Arrow(pygame.sprite.Sprite):
 class ScrollingElement:
     '''Classe di un elemento scorrevole'''
 
-    def __init__(self, x, y, image, acceleration=_acceleration):
+    def __init__(self, x, y, image, acceleration=_acceleration) -> None:
         '''Costruttore dell'elemento'''
 
         self.image = image
@@ -334,7 +334,7 @@ class ScrollingElement:
 class Sky:
     '''Classe del cielo'''
 
-    def __init__(self):
+    def __init__(self) -> None:
         '''Costruttore del cielo'''
         
         layer1_image = pygame.image.load(os.path.join(basefolder, 'sprites', 'background', 'layer1.png')).convert_alpha()

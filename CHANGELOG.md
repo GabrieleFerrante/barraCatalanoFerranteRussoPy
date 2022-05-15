@@ -2,6 +2,13 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.5.0]**
+---
+* Aggiunto il salvataggio dati su database remoto, basato su un id generato al primo avvio del gioco.
+* Ora il giocatore deve scegliere un nome al primo avvio del gioco. Questo può essere modificato in seguito.
+* Aggiunta una schermata di fine partita, che mostra il punteggio raggiunto.
+
+
 ## **[0.4.1]**
 ---
 * Ora l'equazione della traiettoria è visualizzata durante il gioco
