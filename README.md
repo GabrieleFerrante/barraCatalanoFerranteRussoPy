@@ -29,7 +29,7 @@ All'inizio della partita il giocatore seleziona uno tra tre livelli di difficolt
 * **NORMALE**: 3 vite
 * **DIFFICILE**: 1 vita  
 
-L'obiettivo del gioco è realizzare il punteggio più alto possibile. I tre record per ogni difficoltà verranno ipoteticamente salvati su un database remoto alla fine di ogni partita.  
+L'obiettivo del gioco è realizzare il punteggio più alto possibile. I tre record per ogni difficoltà verranno salvati su un database remoto alla fine di ogni partita.  
 Grazie a ciò sarà possibile comparare i migliori punteggi realizzati dai giocatori, visualizzabili da una classifica in gioco.
 
 
