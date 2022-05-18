@@ -2,6 +2,11 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.5.1]**
+---
+* Risolto un bug dove se si cambiava il nome prima di chiudere il gioco, al prossimo avvio i dati non sarebbero stati sincronizzati correttamente
+
+
 ## **[0.5.0]**
 ---
 * Aggiunto il salvataggio dati su database remoto, basato su un id generato al primo avvio del gioco.

@@ -97,7 +97,7 @@ class Game:
 
         # Sincronizza i punteggi dal database
         for i, difficulty in enumerate(['EASY', 'NORMAL', 'HARD']):
-            self.high_scores[i] = db.get_score(set_prefix + difficulty, str(self.id), self.name)
+            self.high_scores[i] = db.get_score(set_prefix + difficulty, str(self.id))
 
     def shoot(self, ticks, trajectory, mouse_pos):
         '''Scocca una freccia
