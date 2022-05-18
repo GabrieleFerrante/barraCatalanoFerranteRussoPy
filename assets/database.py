@@ -15,6 +15,8 @@ SET_NORMAL = 'bigShot_scores_NORMAL'
 SET_HARD = 'bigShot_scores_HARD'
 
 def check_connection(host='http://google.com'):
+    '''Controlla la connessione cercando di aprire un sito'''
+
     try:
         url.urlopen(host)
         return True
@@ -22,9 +24,13 @@ def check_connection(host='http://google.com'):
         return False
 
 def generate_id():
+    '''Genera un id basandoti sulla data e l\'ora'''
+
     return datetime.now().strftime("%d%m%Y%H%M%S%f")
 
 def id_file(path : str, id : str):
+    '''Genera un file dove salvare l\'id'''
+
     if not os.path.exists(str(Path(path).parent)):
         os.makedirs(str(Path(path).parent))
     if not os.path.exists(path):
@@ -32,6 +38,9 @@ def id_file(path : str, id : str):
             f.write(id)
 
 def save_score(set : str, id : str, player_name : str, score : int):
+    '''Salva il punteggio'''
+
+    # Controlla se la connessione funziona. Se no non fare niente
     if check_connection():
         try:
             r.ping()
@@ -49,6 +58,8 @@ def save_score(set : str, id : str, player_name : str, score : int):
     r.zadd(set, {member: score})
 
 def get_score(set : str, id : str):
+
+    # Controlla se la connessione funziona. Se no ritorna 0
     if check_connection():
         try:
             r.ping()
@@ -59,12 +70,14 @@ def get_score(set : str, id : str):
 
     score = None
 
+    # Cerca un membro del set che coincide con l'id
     for _i in r.zrange(set, 0, -1):
         i = str(_i)[1:].replace('\'', '')
         _, _id = i.split('_')
         if _id == id:
             score = r.zscore(set, i)
 
+    # Se non trova niente ritorna 0
     if score != None:
         return int(score)
     else:
