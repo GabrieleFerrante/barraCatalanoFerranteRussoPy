@@ -2,6 +2,12 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.5.2]**
+---
+* Aggiunta la classifica
+* Ora passare il cursore sopra un bersaglio mostra la sua equazione della retta
+
+
 ## **[0.5.1]**
 ---
 * Risolto un bug dove se si cambiava il nome prima di chiudere il gioco, al prossimo avvio i dati non sarebbero stati sincronizzati correttamente

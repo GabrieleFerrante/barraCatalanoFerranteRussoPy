@@ -17,7 +17,12 @@ class Retta:
         elif tipo == 2:
             self.__punto1 = args[0]
             self.__punto2 = args[1]
-            self.__m = (self.__punto2[1] - self.__punto1[1]) / (self.__punto2[0] - self.__punto1[0])
+            try:
+                self.__m = (self.__punto2[1] - self.__punto1[1]) / (self.__punto2[0] - self.__punto1[0])
+                self.verticale = False
+            except ZeroDivisionError:
+                self.__m = 0
+                self.verticale = True
             self.__a = -self.__m
             self.__b = 1
             self.__c = -self.__punto1[0] + self.__punto1[1]
@@ -48,8 +53,7 @@ class Retta:
             if self.__b != 0:
                 return -self.__a / self.__b
             else:  # Se b = 0, dai un errore
-                raise ZeroDivisionError
-
+                return 0
     @property
     def q(self):
         """
@@ -107,7 +111,7 @@ class Retta:
         noto = noto if c <= 0 else f"+{noto}"
         noto = noto if c != 0 else ""
 
-        return f"y={ind}{noto}"
+        return f"y={ind}{noto}" if not self.verticale else f"x={ind}{noto}"
 
     def trovaY(self, x):
         """
@@ -140,25 +144,8 @@ class Retta:
 
 
 def main():
-    tipo = int(input("Scegli il tipo di retta tra 0, 1, 2: "))
-    if tipo == 0:
-        a, b, c = input("Inserisci a, b e c separati da spazi: ").split()
-        a, b, c = float(a), float(b), float(c)
-        retta = Retta(tipo, a, b, c)
-        print(retta.m)
-    elif tipo == 1:
-        m = float(input("Inserisci m: "))
-        x, y = float(input("Inserisci x: ")), float(input("Inserisci y: "))
-        retta = Retta(tipo, m, (x, y))
-        print(retta.eqEsplicita())
-    elif tipo == 2:
-        x1, y1 = float(input("Inserisci x1: ")), float(input("Inserisci y1: "))
-        x2, y2 = float(input("Inserisci x2: ")), float(input("Inserisci y2: "))
-        retta = Retta(tipo, (x1, y1), (x2, y2))
-        print(retta.m)
-        print(retta.eqEsplicita())
-    else:
-        raise Exception("Il tipo specificato non è valido")
+    r = Retta(2, (0, 3), (2, 3))
+    print(r.eqEsplicita())
 
 
 if __name__ == '__main__':

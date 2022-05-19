@@ -14,6 +14,13 @@ basefolder = str(Path(__file__).parent)
 save_folder = os.path.join(basefolder, 'bigshot_savedata')
 set_prefix = 'bigShot_scores_'
 
+font32 = pygame.font.Font(
+    os.path.join(basefolder, 'assets', 'font.ttf'), 32)
+font24 = pygame.font.Font(
+    os.path.join(basefolder, 'assets', 'font.ttf'), 24)
+font18 = pygame.font.Font(
+    os.path.join(basefolder, 'assets', 'font.ttf'), 18)
+
 class Game:
     '''Classe del gioco'''
 
@@ -38,12 +45,6 @@ class Game:
         
         self.clock = pygame.time.Clock()
         self.frame_counter = 0
-        self.font32 = pygame.font.Font(
-            os.path.join(basefolder, 'assets', 'font.ttf'), 32)
-        self.font24 = pygame.font.Font(
-            os.path.join(basefolder, 'assets', 'font.ttf'), 24)
-        self.font18 = pygame.font.Font(
-            os.path.join(basefolder, 'assets', 'font.ttf'), 18)
 
         # Inizializza il giocatore
         self.player = Player(64, self.HEIGHT - (64 + 96), os.path.join(
@@ -99,6 +100,7 @@ class Game:
         # Sincronizza i punteggi dal database
         for i, difficulty in enumerate(['EASY', 'NORMAL', 'HARD']):
             self.high_scores[i] = db.get_score(set_prefix + difficulty, str(self.id))
+        print(self.high_scores)
 
     def shoot(self, ticks, trajectory, mouse_pos):
         '''Scocca una freccia
@@ -128,7 +130,7 @@ class Game:
 
         self.player.draw(self.screen, self.frame_counter, 12)
         for target in list(self.targets)[::-1]: # Disegna i bersagli
-            target.draw(self.screen)
+            target.draw(self.screen, mouse_pos)
 
         # Disegna i punti rappresentanti la traiettoria
         for i in range(len(trajectory)):
@@ -148,7 +150,7 @@ class Game:
         self.ground.draw(self.screen)
         self.draw_bow(trajectory)
 
-        equation_label = self.font18.render(equation, False, (0, 0, 0))
+        equation_label = font18.render(equation, False, (0, 0, 0))
         equation_rect = equation_label.get_rect()
         equation_rect.center = (mouse_pos.x, mouse_pos.y - 28)
         self.screen.blit(equation_label, equation_rect) # Disegna l'equazione sotto al cursore
@@ -269,7 +271,7 @@ class Game:
         play_button = BaseButton(46, 280, play_image, self.start)
         mode_button = BaseButton(46, 350, mode_image, self.cycle_difficulty)
         quit_button = BaseButton(46, 425, quit_image, sys.exit)
-        leaderboard_button = BaseButton(646, 521, leaderboard_image, lambda: print('LEADERBOARD'))
+        leaderboard_button = BaseButton(646, 521, leaderboard_image, lambda: self.set_state('LEADERBOARD'))
         name_button = BaseButton(610, 465, name_image, lambda: self.set_state('ASK_NAME'))
 
         mode_text_coords = (mode_button.rect.left + mode_button.image.get_width() + 12, mode_button.rect.centery)
@@ -299,8 +301,8 @@ class Game:
             leaderboard_button.draw(self.screen)
             name_button.draw(self.screen)
 
-            mode_label = self.font32.render(self.DIFFICULTIES[self.difficulty], False, (255,255,255))
-            outline = self.font32.render(self.DIFFICULTIES[self.difficulty], False, (0,0,0))
+            mode_label = font32.render(self.DIFFICULTIES[self.difficulty], False, (255,255,255))
+            outline = font32.render(self.DIFFICULTIES[self.difficulty], False, (0,0,0))
             mode_rect = mode_label.get_rect()
             mode_rect.left = mode_text_coords[0]
             mode_rect.centery = mode_text_coords[1]
@@ -410,7 +412,7 @@ class Game:
         '''Schermata dove inserire il nome'''
 
         # Casella di testo dal modulo pygame_textinput
-        box = pygame_textinput.TextInputVisualizer(font_object=self.font32)
+        box = pygame_textinput.TextInputVisualizer(font_object=font32)
 
         # Pulsante di conferma
         confirm_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'confirm.png')).convert_alpha()
@@ -463,7 +465,7 @@ class Game:
         while self.state == self.STATES['END']:
 
             # Disegna tutti gli elementi della schermata
-            score_label = self.font32.render(str(self.score[0]), False, (0, 0, 0))
+            score_label = font32.render(str(self.score[0]), False, (0, 0, 0))
             score_rect = score_label.get_rect(topleft=(474, 278))
             
             self.screen.fill((129, 212, 221))
@@ -482,6 +484,84 @@ class Game:
 
             pygame.display.update()
 
+    def leaderboard(self):
+        '''Schermata della classifica'''
+
+        back_button = BaseButton(24, 528, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'back.png')), lambda: self.set_state('MENU'))
+
+        easy_button = BaseButton(26, 90, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'easy.png')), return_bool=True)
+        normal_button = BaseButton(26, 130, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'normal.png')), return_bool=True)
+        hard_button = BaseButton(26, 170, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'hard.png')), return_bool=True)
+
+        timer = 0
+        update_interval = 60e3 # Secondi di intervallo tra due aggiornamenti della classifica
+        set_difficulty = 0
+        DIFFICULTIES = ['EASY', 'NORMAL', 'HARD']
+        top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+        score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+
+        while self.state == self.STATES['LEADERBOARD']:
+
+            dt = self.clock.tick()
+            timer += dt
+
+            if timer >= update_interval:
+                top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+                timer = 0
+
+            self.screen.fill((129, 212, 221))
+            self.sky.update(self.state)
+            self.sky.draw(self.screen)
+
+            if easy_button.draw(self.screen):
+                set_difficulty = 0
+                top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+
+            if normal_button.draw(self.screen):
+                set_difficulty = 1
+                top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+
+            if hard_button.draw(self.screen):
+                set_difficulty = 2
+                top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+
+            back_button.draw(self.screen)
+
+            for i, player in enumerate(top_players):
+                rank = font18.render(str(i+1), False, (0, 0, 0))
+                name = font18.render(player[0], False, (0, 0, 0))
+                score = font18.render(str(player[1]), False, (0, 0, 0))
+
+                y_position = 60 + (30 * i)
+
+                self.screen.blit(rank, rank.get_rect(right=457, top=y_position))
+                self.screen.blit(name, name.get_rect(topleft=(500, y_position)))
+                self.screen.blit(score, score.get_rect(topleft=(687, y_position)))
+
+            
+            rank = font18.render(str(score_and_rank[1]), False, (0, 0, 0))
+            name = font18.render(self.name, False, (0, 0, 0))
+            score = font18.render(str(score_and_rank[0]), False, (0, 0, 0))
+
+            self.screen.blit(font18.render('TU:', False, (0, 0, 0)), (500, 430))
+            self.screen.blit(rank, rank.get_rect(right=457, top=460))
+            self.screen.blit(name, name.get_rect(topleft=(500, 460)))
+            self.screen.blit(score, score.get_rect(topleft=(687, 460)))
+
+            
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+            
+            pygame.display.update()
+
+
+
     def set_name(self, name):
         '''Imposta il nome'''
 
@@ -498,15 +578,16 @@ class Game:
             self.name = name
         self.set_state('MENU')
 
+
     def hud(self):
         '''Disegna e gestisci la HUD'''
 
         # Testo del punteggio
-        score_label = self.font32.render(f"{self.score[0]}", 1, (0, 0, 0))
+        score_label = font32.render(f"{self.score[0]}", 1, (0, 0, 0))
         score_rect = score_label.get_rect(center=(self.WIDTH/2, 32))
 
         # Testo del record
-        high_score_label = self.font24.render(f"{self.high_scores[self.difficulty]}", 1, (0, 0, 0))
+        high_score_label = font24.render(f"{self.high_scores[self.difficulty]}", 1, (0, 0, 0))
         high_score_rect = high_score_label.get_rect(center=(self.WIDTH/2, 72))
 
         # Disegna le vite
@@ -555,6 +636,7 @@ class Game:
         while True: # Il loop è infinito siccome la chiusura del gioco è gestita dagli altri loop interni a questo
             self.ask_name()
             self.mainmenu()
+            self.leaderboard()
             self.gameloop()
             self.endscreen()
             self.pause()

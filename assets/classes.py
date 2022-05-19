@@ -3,6 +3,7 @@ from pathlib import Path
 import pygame
 from random import randint
 from math import *
+from coniche.retta import Retta
 
 
 def rot_from_zero(surface, angle):
@@ -32,6 +33,9 @@ basefolder = str(Path(__file__).parent)
 
 WIDTH, HEIGHT = 1024, 576
 _acceleration = 3
+font18 = pygame.font.Font(
+    os.path.join(basefolder, 'font.ttf'), 18)
+
 
 class Spritesheet:
     '''Classe per le spritesheet
@@ -108,24 +112,31 @@ class Target(pygame.sprite.Sprite):
         acceleration: Accelerazione del bersaglio
         '''
         super().__init__()
-        self.x, self.y = x, y
         self.image = pygame.image.load(
             os.path.join(basefolder, 'sprites', 'target.png')
         ).convert_alpha()
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(center=(x, y))
         self.mask = pygame.mask.from_surface(self.image)
         self.speed = 0
         self.acceleration = acceleration
         self.score = 10
         self.group = group
+        self.equation = Retta(2, (x, y), (0, y)).eqEsplicita()
 
-    def draw(self, screen):
+    def draw(self, screen, mouse_pos):
         '''Disegna il bersaglio
         
         screen: Riferimento alla finestra di gioco
         '''
 
-        screen.blit(self.image, (self.x, self.y))
+        eq = font18.render(self.equation, False, (0, 0, 0))
+        eq_rect = eq.get_rect(centerx=self.rect.centerx)
+        eq_rect.centery = self.rect.centery + 48
+
+
+        screen.blit(self.image, self.rect)
+        if self.rect.collidepoint(mouse_pos.x, mouse_pos.y):
+            screen.blit(eq, eq_rect)
 
     def update(self, state, delta=1):
         '''Aggiorna la posizione del bersaglio'''
@@ -133,8 +144,7 @@ class Target(pygame.sprite.Sprite):
 
         if state != 2:
             self.speed -= self.acceleration * delta
-            self.x += int(self.speed)
-            self.rect.center = self.x, self.y
+            self.rect.move_ip(self.speed, 0)
         if self.speed < -1:
             self.speed = 0
         
@@ -363,7 +373,7 @@ class Sky:
 class BaseButton:
     '''Classe base del bottone'''
 
-    def __init__(self, x, y, image, command=None, scale=1) -> None:
+    def __init__(self, x, y, image, command=None, scale=1, return_bool=False) -> None:
         '''Costruttore del bottone'''
 
         width = image.get_width()
@@ -373,6 +383,7 @@ class BaseButton:
         self.rect.topleft = (x, y)
         self.command = command
         self.clicked = False
+        self.return_bool = return_bool
 
     def draw(self, screen):
         mouse_pos = pygame.math.Vector2(pygame.mouse.get_pos())
@@ -382,6 +393,8 @@ class BaseButton:
                 self.clicked = True
                 if self.command:
                     self.command()
+                if self.return_bool:
+                    return self.clicked
         
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
