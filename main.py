@@ -52,7 +52,7 @@ class Game:
 
         # Inizializza i bersagli
         self.targets = pygame.sprite.Group()
-        self.targets_spawn_time = 3500
+        self.targets_spawn_time = 3000
         self.previous_target_ticks = pygame.time.get_ticks()
 
         # Inizializza il terreno
@@ -365,6 +365,8 @@ class Game:
 
 
             pygame.display.update()
+
+            self.score[0] += db.receive_bonus()
 
             if self.score[0] > self.high_scores[self.difficulty]:
                 self.high_scores[self.difficulty] = self.score[0]

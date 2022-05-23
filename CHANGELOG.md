@@ -2,6 +2,13 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.5.4]**
+---
+* Aggiunto un bonus ricevuto di 30 punti ogni 5 minuti durante la partita
+  * Questo se connessi al database
+* Tempo di creazione dei bersagli ridotto da 3.5 secondi a 3 secondi 
+
+
 ## **[0.5.3]**
 ---
 * Risolto un bug della classifica, dove non mostrava propriamente il proprio punteggio e posizione in classifica

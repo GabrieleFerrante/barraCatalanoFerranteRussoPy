@@ -4,10 +4,15 @@ import urllib.request as url
 from datetime import datetime
 from random import *
 from pathlib import Path
+from time import sleep
 
 
 host1, port1 = '10.255.237.221', '6379' # Connessione della scuola
 r = redis.Redis(host=host1, port=port1, password='1357642rVi0', socket_timeout=5)
+
+CHANNEL_NAME = 'bigShot_bonus'
+pubsub = r.pubsub()
+pubsub.subscribe(CHANNEL_NAME)
 
 SET_EASY = 'bigShot_scores_EASY'
 SET_NORMAL = 'bigShot_scores_NORMAL'
@@ -21,6 +26,17 @@ def check_connection(host='http://google.com'):
         return True
     except:
         return False
+
+def receive_bonus(amount=30):
+    bonus = False
+    try:
+        message = pubsub.get_message()['data']
+        if message != 1:
+            bonus = True
+    except:
+        pass
+    
+    return amount if bonus else 0
 
 def generate_id():
     '''Genera un id basandoti sulla data e l\'ora'''
@@ -120,9 +136,11 @@ def get_leaderboard(set : str, players_number=10):
         leaderboard.append((name, score))
     return leaderboard
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-#     for j in range(100):
-#         save_score(SET_EASY, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
-#         save_score(SET_NORMAL, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
-#         save_score(SET_HARD, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
+    loop = 0
+    while loop < 30:
+        print(receive_bonus())
+
+        loop += 1
+        sleep(5)
