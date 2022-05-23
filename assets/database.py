@@ -7,7 +7,6 @@ from pathlib import Path
 
 
 host1, port1 = '10.255.237.221', '6379' # Connessione della scuola
-host2, port2 = '93.145.175.242', '63213' # Connessione non della scuola
 r = redis.Redis(host=host1, port=port1, password='1357642rVi0', socket_timeout=5)
 
 SET_EASY = 'bigShot_scores_EASY'
