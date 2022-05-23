@@ -4,7 +4,7 @@ Cambiamenti relativi al gioco in Python
 
 ## **[0.5.4]**
 ---
-* Aggiunto un bonus ricevuto di 30 punti ogni 5 minuti durante la partita
+* Aggiunto un bonus di 30 punti ricevuto ogni 5 minuti durante la partita
   * Questo se connessi al database
 * Tempo di creazione dei bersagli ridotto da 3.5 secondi a 3 secondi 
 
