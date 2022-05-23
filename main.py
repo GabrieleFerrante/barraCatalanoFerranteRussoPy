@@ -100,7 +100,6 @@ class Game:
         # Sincronizza i punteggi dal database
         for i, difficulty in enumerate(['EASY', 'NORMAL', 'HARD']):
             self.high_scores[i] = db.get_score(set_prefix + difficulty, str(self.id))
-        print(self.high_scores)
 
     def shoot(self, ticks, trajectory, mouse_pos):
         '''Scocca una freccia
@@ -181,7 +180,7 @@ class Game:
         rotated_bow_rect.center = self.player.rect.center
         self.screen.blit(rotated_bow, rotated_bow_rect)
 
-    def input(self, ticks, trajectory, mouse_pos):
+    def game_input(self, ticks, trajectory, mouse_pos):
         '''Gestisci gli input
         
         ticks: I tick al momento del richiamo (pygame.time.get_ticks) 
@@ -190,7 +189,7 @@ class Game:
         '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.quit()
+                self.game_quit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_BACKSLASH:
                     self.debug_mode = not self.debug_mode
@@ -199,7 +198,7 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.shoot(ticks, trajectory, mouse_pos)
 
-    def quit(self):
+    def game_quit(self):
         '''Chiudi il gioco'''
 
         self.save_data() # Salva i dati prima di chiudere il gioco
@@ -355,7 +354,7 @@ class Game:
                 i.check_collisions(self.targets, self.score)
                 i.update(self.player)
 
-            self.input(current_ticks, trajectory, mouse_pos)
+            self.game_input(current_ticks, trajectory, mouse_pos)
             self.draw_all(trajectory, mouse_pos, equation)
             self.hud()
 
@@ -402,7 +401,7 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.quit()
+                    self.game_quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.set_state('GAME')
@@ -441,7 +440,7 @@ class Game:
 
             for event in events:
                 if event.type == pygame.QUIT:
-                    self.quit()
+                    self.game_quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.set_name(box.value)
@@ -480,7 +479,7 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.quit()
+                    self.game_quit()
 
             pygame.display.update()
 
@@ -498,16 +497,16 @@ class Game:
         set_difficulty = 0
         DIFFICULTIES = ['EASY', 'NORMAL', 'HARD']
         top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
-        score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+        score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
 
         while self.state == self.STATES['LEADERBOARD']:
-
+            
             dt = self.clock.tick()
             timer += dt
 
             if timer >= update_interval:
                 top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
-                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
                 timer = 0
 
             self.screen.fill((129, 212, 221))
@@ -517,17 +516,17 @@ class Game:
             if easy_button.draw(self.screen):
                 set_difficulty = 0
                 top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
-                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
 
             if normal_button.draw(self.screen):
                 set_difficulty = 1
                 top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
-                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
 
             if hard_button.draw(self.screen):
                 set_difficulty = 2
                 top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
-                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, rank=True)
+                score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
 
             back_button.draw(self.screen)
 
@@ -556,7 +555,10 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.quit()
+                    self.game_quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.set_state('MENU')
             
             pygame.display.update()
 

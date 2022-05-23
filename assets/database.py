@@ -6,8 +6,8 @@ from random import *
 from pathlib import Path
 
 
-host1, port1 = '10.255.237.221', '6379'
-host2, port2 = '93.145.175.242', '63213'
+host1, port1 = '10.255.237.221', '6379' # Connessione della scuola
+host2, port2 = '93.145.175.242', '63213' # Connessione non della scuola
 r = redis.Redis(host=host1, port=port1, password='1357642rVi0', socket_timeout=5)
 
 SET_EASY = 'bigShot_scores_EASY'
@@ -40,7 +40,7 @@ def id_file(path : str, id : str):
 def save_score(set : str, id : str, player_name : str, score : int):
     '''Salva il punteggio'''
 
-    # Controlla se la connessione funziona. Se no non fare niente
+    # Controlla se la connessione funziona. Se no ritorna None
     if check_connection():
         try:
             r.ping()
@@ -57,7 +57,7 @@ def save_score(set : str, id : str, player_name : str, score : int):
             r.zrem(set, i)
     r.zadd(set, {member: score})
 
-def get_score(set : str, id : str, rank=False):
+def get_score(set : str, id : str, with_rank=False):
     '''Ritorna un punteggio in base all'id'''
 
     # Controlla se la connessione funziona. Se no ritorna 0
@@ -65,8 +65,12 @@ def get_score(set : str, id : str, rank=False):
         try:
             r.ping()
         except:
+            if with_rank:
+                return (0, 0)
             return 0
     else:
+        if with_rank:
+            return (0, 0)
         return 0
 
     score = None
@@ -75,7 +79,7 @@ def get_score(set : str, id : str, rank=False):
     # Cerca un membro del set che coincide con l'id
     scores = r.zrange(set, 0, -1)
     if len(scores) <= 0:
-        if not rank:
+        if with_rank:
             return (0, r.zcard(set) + 2)
         return 0
         
@@ -88,13 +92,13 @@ def get_score(set : str, id : str, rank=False):
 
     # Se non trova niente ritorna 0
     if score != None:
-        if not rank:
+        if with_rank:
             return (int(score), rank)
         else:
             return int(score)
     else:
-        if not rank:
-            return (0, r.zcard(set) + 2)
+        if with_rank:
+            return (0, r.zcard(set) + 1)
         else:
             return 0
 
