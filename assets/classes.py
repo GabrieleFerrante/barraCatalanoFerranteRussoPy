@@ -171,7 +171,7 @@ class Target(pygame.sprite.Sprite):
 
     
     @classmethod
-    def target_spawner(cls, group, time_passed, spawn_time):
+    def target_spawner(cls, group, time_passed, spawn_time, score=0):
         '''Crea una freccia (Metodo di classe)
         
         group: Gruppo che dovrà contenere 
@@ -179,13 +179,15 @@ class Target(pygame.sprite.Sprite):
         time_passed: Tempo passato dalla creazione 
                      dell'ultimo bersaglio in millisecondi
         spawn_time: Tempo di spawn del bersaglio
+        score: Il punteggio al momento della creazione del bersaglio
         '''
 
         
         if time_passed >= spawn_time:
             # Se passa abbastanza tempo aggiungi un bersaglio
+            new_acceleration = _acceleration + (score * 0.003)
             group.add(Target(WIDTH, randint(
-                0,HEIGHT - 110), group))
+                0,HEIGHT - 110), group, new_acceleration))
             return True
 
 

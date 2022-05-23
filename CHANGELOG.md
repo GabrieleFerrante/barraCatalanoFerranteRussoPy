@@ -2,6 +2,12 @@
 
 Cambiamenti relativi al gioco in Python  
 
+## **[0.5.3]**
+---
+* Risolto un bug della classifica, dove non mostrava propriamente il proprio punteggio e posizione in classifica
+* Ora i bersagli accelerano con l'aumento del punteggio
+
+
 ## **[0.5.2]**
 ---
 * Aggiunta la classifica

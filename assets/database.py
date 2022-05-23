@@ -79,23 +79,22 @@ def get_score(set : str, id : str, with_rank=False):
     scores = r.zrange(set, 0, -1)
     if len(scores) <= 0:
         if with_rank:
-            return (0, r.zcard(set) + 2)
+            return (0, 0)
         return 0
-        
+    
     for _i in scores:
         i = str(_i)[1:].replace('\'', '')
         _, _id = i.split('_')
-        if _id == id:
+        if str(_id) == str(id):
             score = r.zscore(set, i)
             rank = r.zrevrank(set, i) + 1
+            if with_rank:
+                return (int(score), rank)
+            else:
+                return int(score)
 
     # Se non trova niente ritorna 0
-    if score != None:
-        if with_rank:
-            return (int(score), rank)
-        else:
-            return int(score)
-    else:
+    if score == None:
         if with_rank:
             return (0, r.zcard(set) + 1)
         else:
@@ -121,9 +120,9 @@ def get_leaderboard(set : str, players_number=10):
         leaderboard.append((name, score))
     return leaderboard
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    for j in range(100):
-        save_score(SET_EASY, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
-        save_score(SET_NORMAL, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
-        save_score(SET_HARD, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
+#     for j in range(100):
+#         save_score(SET_EASY, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
+#         save_score(SET_NORMAL, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))
+#         save_score(SET_HARD, generate_id(), 'player' + str(j), round(randint(0, 1000), -1))

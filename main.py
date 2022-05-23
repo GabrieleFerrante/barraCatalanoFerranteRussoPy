@@ -99,7 +99,8 @@ class Game:
 
         # Sincronizza i punteggi dal database
         for i, difficulty in enumerate(['EASY', 'NORMAL', 'HARD']):
-            self.high_scores[i] = db.get_score(set_prefix + difficulty, str(self.id))
+            score = db.get_score(set_prefix + difficulty, str(self.id))
+            self.high_scores[i] = score
 
     def shoot(self, ticks, trajectory, mouse_pos):
         '''Scocca una freccia
@@ -269,7 +270,7 @@ class Game:
         # I pulsanti del menu
         play_button = BaseButton(46, 280, play_image, self.start)
         mode_button = BaseButton(46, 350, mode_image, self.cycle_difficulty)
-        quit_button = BaseButton(46, 425, quit_image, sys.exit)
+        quit_button = BaseButton(46, 425, quit_image, self.game_quit)
         leaderboard_button = BaseButton(646, 521, leaderboard_image, lambda: self.set_state('LEADERBOARD'))
         name_button = BaseButton(610, 465, name_image, lambda: self.set_state('ASK_NAME'))
 
@@ -335,7 +336,7 @@ class Game:
 
         
             # Gestione dei bersagli
-            target_spawned = Target.target_spawner(self.targets, current_ticks - self.previous_target_ticks, self.targets_spawn_time)
+            target_spawned = Target.target_spawner(self.targets, current_ticks - self.previous_target_ticks, self.targets_spawn_time, self.score[0])
             if target_spawned:
                 self.previous_target_ticks = current_ticks
 
@@ -387,7 +388,7 @@ class Game:
         menu_image = pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'pausemenu', 'menu.png')).convert_alpha()
         # Pulsanti e relative immagini
         continue_button = BaseButton(325, 270, continue_image, lambda: self.set_state('GAME'))
-        menu_button = BaseButton(230, 330, menu_image, lambda: self.save_data() or self.set_state('MENU'))
+        menu_button = BaseButton(230, 330, menu_image, return_bool=True)
 
 
         while self.state == self.STATES['PAUSED']:
@@ -397,7 +398,9 @@ class Game:
             self.sky.draw(self.screen)
             self.hud()
             continue_button.draw(self.screen)
-            menu_button.draw(self.screen)
+            if menu_button.draw(self.screen):
+                self.save_data()
+                self.set_state('MENU')
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -494,13 +497,15 @@ class Game:
 
         timer = 0
         update_interval = 60e3 # Secondi di intervallo tra due aggiornamenti della classifica
-        set_difficulty = 0
+        set_difficulty = 1
         DIFFICULTIES = ['EASY', 'NORMAL', 'HARD']
         top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
         score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
 
+
         while self.state == self.STATES['LEADERBOARD']:
             
+            # print(score_and_rank)
             dt = self.clock.tick()
             timer += dt
 
