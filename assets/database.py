@@ -12,7 +12,10 @@ r = redis.Redis(host=host1, port=port1, password='1357642rVi0', socket_timeout=5
 
 CHANNEL_NAME = 'bigShot_bonus'
 pubsub = r.pubsub()
-pubsub.subscribe(CHANNEL_NAME)
+try:
+    pubsub.subscribe(CHANNEL_NAME)
+except:
+    pass
 
 SET_EASY = 'bigShot_scores_EASY'
 SET_NORMAL = 'bigShot_scores_NORMAL'

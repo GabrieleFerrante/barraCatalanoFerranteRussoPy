@@ -1,6 +1,11 @@
 # **Changelog**
 
-Cambiamenti relativi al gioco in Python  
+Cambiamenti relativi al gioco Big Shot 
+
+## **[0.5.5]**
+---
+* Aggiunto un piccolo indicatore per sapere quale difficoltà è selezionata nella schermata della classifica
+
 
 ## **[0.5.4]**
 ---

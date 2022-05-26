@@ -185,7 +185,7 @@ class Target(pygame.sprite.Sprite):
         
         if time_passed >= spawn_time:
             # Se passa abbastanza tempo aggiungi un bersaglio
-            new_acceleration = _acceleration + (score * 0.003)
+            new_acceleration = _acceleration + (score * 0.004)
             group.add(Target(WIDTH, randint(
                 0,HEIGHT - 110), group, new_acceleration))
             return True
@@ -386,6 +386,7 @@ class BaseButton:
         self.command = command
         self.clicked = False
         self.return_bool = return_bool
+
 
     def draw(self, screen):
         mouse_pos = pygame.math.Vector2(pygame.mouse.get_pos())

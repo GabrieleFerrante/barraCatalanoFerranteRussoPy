@@ -10,10 +10,12 @@ from coniche.parabola import Parabola
 from assets.classes import Player, Arrow, Target, ScrollingElement, Sky, BaseButton, rot_from_zero, map_range
 
 
+pygame.init()
 basefolder = str(Path(__file__).parent)
 save_folder = os.path.join(basefolder, 'bigshot_savedata')
 set_prefix = 'bigShot_scores_'
 
+# Font
 font32 = pygame.font.Font(
     os.path.join(basefolder, 'assets', 'font.ttf'), 32)
 font24 = pygame.font.Font(
@@ -21,12 +23,12 @@ font24 = pygame.font.Font(
 font18 = pygame.font.Font(
     os.path.join(basefolder, 'assets', 'font.ttf'), 18)
 
+
 class Game:
     '''Classe del gioco'''
 
     def __init__(self):
         '''Costruttore della classe di gioco'''
-        pygame.init()
 
         # Inizializza tutte le variabili e costanti interne
         self.WIDTH, self.HEIGHT = 1024, 576
@@ -558,7 +560,15 @@ class Game:
             self.screen.blit(name, name.get_rect(topleft=(500, 460)))
             self.screen.blit(score, score.get_rect(topleft=(687, 460)))
 
-            
+            # Disegna un indicatore affianco alla difficoltà selezionata
+            outline_1 = pygame.Vector2(16, 85 + (40 * set_difficulty))
+            outline_2 = pygame.Vector2(16, 116 + (40 * set_difficulty))
+
+            indicator_1 = pygame.Vector2(16, 86 + (40 * set_difficulty))
+            indicator_2 = pygame.Vector2(16, 115 + (40 * set_difficulty))
+
+            pygame.draw.line(self.screen, 0, outline_1, outline_2, 5)
+            pygame.draw.line(self.screen, (255, 255, 255), indicator_1, indicator_2, 3)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -566,6 +576,19 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.set_state('MENU')
+                    if event.key == pygame.K_UP:
+                        set_difficulty -= 1
+                        if set_difficulty < 0:
+                            set_difficulty = 2
+                        top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+                        score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
+                    elif event.key == pygame.K_DOWN:
+                        set_difficulty += 1
+                        if set_difficulty > len(DIFFICULTIES) - 1:
+                            set_difficulty = 0
+                        top_players = db.get_leaderboard(set_prefix + DIFFICULTIES[set_difficulty])
+                        score_and_rank = db.get_score(set_prefix + DIFFICULTIES[set_difficulty], self.id, True)
+                        
             
             pygame.display.update()
 
