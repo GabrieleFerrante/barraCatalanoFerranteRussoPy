@@ -7,7 +7,8 @@ from pathlib import Path
 from math import *
 from random import randint
 from coniche.parabola import Parabola
-from assets.classes import Player, Arrow, Target, ScrollingElement, Sky, BaseButton, rot_from_zero, map_range
+from threading import Thread
+from assets.classes import Player, Arrow, Target, ScrollingElement, Sky, BaseButton, rot_from_zero, map_range, play_sound
 
 
 pygame.init()
@@ -36,6 +37,7 @@ class Game:
         self.difficulty = 1
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption('Big Shot')
+        pygame.display.set_icon(pygame.image.load(os.path.join(basefolder, 'icon.ico')).convert_alpha())
         self.score = [0]
         self.high_scores = [0, 0, 0]
         self.lives = 3
@@ -116,6 +118,8 @@ class Game:
             return
         arrow_was_shot = Arrow.arrow_spawner(self.arrows, ticks - self.previous_fire_ticks, self.fire_rate, trajectory, mouse_pos)
         if arrow_was_shot:
+            shoot_sound_thread = Thread(target=play_sound, args=(3,))
+            shoot_sound_thread.start()
             self.previous_fire_ticks = ticks # Resetta il timer per sparare
 
 
@@ -345,6 +349,8 @@ class Game:
             for i in list(self.targets)[::-1]:
                 out_of_screen = i.update(dt, self.state)
                 if out_of_screen:
+                    damage_sound_thread = Thread(target=play_sound, args=(0,))
+                    damage_sound_thread.start()
                     self.lives -= 1
                 # Aggiorna i bersagli
 
@@ -495,9 +501,9 @@ class Game:
 
         back_button = BaseButton(24, 528, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'back.png')), lambda: self.set_state('MENU'))
 
-        easy_button = BaseButton(26, 90, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'easy.png')), return_bool=True)
-        normal_button = BaseButton(26, 130, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'normal.png')), return_bool=True)
-        hard_button = BaseButton(26, 170, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'hard.png')), return_bool=True)
+        easy_button = BaseButton(26, 90, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'easy.png')), return_bool=True, play_sound=False)
+        normal_button = BaseButton(26, 130, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'normal.png')), return_bool=True, play_sound=False)
+        hard_button = BaseButton(26, 170, pygame.image.load(os.path.join(basefolder, 'assets', 'sprites', 'mainmenu', 'leaderboard', 'hard.png')), return_bool=True, play_sound=False)
 
         timer = 0
         update_interval = 60e3 # Secondi di intervallo tra due aggiornamenti della classifica

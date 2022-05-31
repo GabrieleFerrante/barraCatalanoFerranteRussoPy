@@ -224,8 +224,4 @@ $RECYCLE.BIN/
 bigshot_savedata/
 bigshot_savedata/*
 
-# Unused audio
-assets/sound/
-assets/sound/*
-
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,pycharm,windows

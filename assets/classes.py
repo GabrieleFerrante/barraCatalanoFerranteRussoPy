@@ -4,7 +4,27 @@ import pygame
 from random import randint
 from math import *
 from coniche.retta import Retta
+from threading import Thread
 
+basefolder = str(Path(__file__).parent)
+
+WIDTH, HEIGHT = 1024, 576
+_acceleration = 3
+font18 = pygame.font.Font(
+    os.path.join(basefolder, 'font.ttf'), 18)
+
+pygame.mixer.pre_init(44100, -16, 1, 512)
+pygame.mixer.init()
+
+SOUNDS = (
+    pygame.mixer.Sound(os.path.join(basefolder, 'sound', 'damage.wav')),
+    pygame.mixer.Sound(os.path.join(basefolder, 'sound', 'destroytarget.wav')),
+    pygame.mixer.Sound(os.path.join(basefolder, 'sound', 'select.wav')),
+    pygame.mixer.Sound(os.path.join(basefolder, 'sound', 'shoot.wav'))
+)
+
+def play_sound(sound_index):
+    SOUNDS[sound_index].play()
 
 def rot_from_zero(surface, angle):
     '''Ruota un immagine senza perdere qualità'''
@@ -26,15 +46,6 @@ def map_range(value, leftMin, leftMax, rightMin, rightMax):
 
     # Converti il range da 0 a 1 al range finale.
     return rightMin + (valueScaled * rightSpan)
-
-
-
-basefolder = str(Path(__file__).parent)
-
-WIDTH, HEIGHT = 1024, 576
-_acceleration = 3
-font18 = pygame.font.Font(
-    os.path.join(basefolder, 'font.ttf'), 18)
 
 
 class Spritesheet:
@@ -166,6 +177,9 @@ class Target(pygame.sprite.Sprite):
     
     def destroy(self):
         '''Rimuove il bersaglio dal gruppo di sprite, eliminandola'''
+
+        destroy_sound_thread = Thread(target=play_sound, args=(1,))
+        destroy_sound_thread.start()
 
         self.group.remove(self)
 
@@ -375,7 +389,7 @@ class Sky:
 class BaseButton:
     '''Classe base del bottone'''
 
-    def __init__(self, x, y, image, command=None, scale=1, return_bool=False) -> None:
+    def __init__(self, x, y, image, command=None, scale=1, return_bool=False, play_sound=True) -> None:
         '''Costruttore del bottone'''
 
         width = image.get_width()
@@ -386,6 +400,7 @@ class BaseButton:
         self.command = command
         self.clicked = False
         self.return_bool = return_bool
+        self.play_sound = play_sound
 
 
     def draw(self, screen):
@@ -394,6 +409,9 @@ class BaseButton:
         if self.rect.collidepoint(mouse_pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 self.clicked = True
+                if self.play_sound:
+                    sound_thread = Thread(target=play_sound, args=(2,))
+                    sound_thread.start()
                 if self.command:
                     self.command()
                 if self.return_bool:

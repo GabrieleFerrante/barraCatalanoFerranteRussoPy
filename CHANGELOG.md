@@ -2,6 +2,10 @@
 
 Cambiamenti relativi al gioco Big Shot 
 
+## **[1.0.0]**
+---
+* Aggiunti gli effetti sonori
+
 ## **[0.5.5]**
 ---
 * Aggiunto un piccolo indicatore per sapere quale difficoltà è selezionata nella schermata della classifica
